@@ -1,1 +1,5 @@
 package-lock.json
+
+# Evidence files: keep them byte-for-byte as Claude Code wrote them
+docs/hw4/sessions/
+docs/plans/
