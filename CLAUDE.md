@@ -2,6 +2,7 @@
 
 Judging platform for hackathons, demo days, and class showcases. Organizers build a weighted rubric and invite judges and teams; judges score their assigned teams on their phones; rankings normalize each judge's scores so winners don't depend on which judges a team drew.
 
+- Product requirements and user stories: @docs/prd.md
 - Setup and human-facing overview: README.md (not auto-loaded; read it when needed)
 
 ## Commands
