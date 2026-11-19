@@ -1,0 +1,841 @@
+ ▐▛███▛█   Claude Code v2.1.325
+▝▜██████▀  Opus 5.5 · Claude Enterprise
+ ▝▝   ▝▝   ~/Documents/Projects/Group Projects/Fair-n-Square
+
+
+❯ /init                                                                         
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      git ls-files | grep -v '^public/' | head -100 && echo --- && ls -la &&
+      echo --- && cat p…)
+  ⎿  Error: Exit code 1
+     .env.example
+     .gitattributes
+     .gitignore
+     .prettierignore
+     .prettierrc.json
+     README.md
+     docs/hw4/notes-ziqi.md
+     eslint.config.mjs
+     next.config.ts
+     … +90 lines (ctrl+o to expand)
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      for f in README.md .env.example .gitignore .gitattributes .prettierignore
+      .prettierrc.js…)
+  ⎿  Error: Exit code 1
+     === README.md
+     This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-
+     next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+     ## Getting Started
+
+     First, run the development server:
+
+     ```bash
+     npm run dev
+     … +368 lines (ctrl+o to expand)
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      git log --format='%H%n%B' -n 3; ls src/generated 2>&1; ls
+      node_modules/next/dist/docs 2>…)
+  ⎿  3deee5a33a873dede253201447ecf74e8429372b
+     docs(hw4): start Ziqi's working notes
+     … +29 lines (ctrl+o to expand)
+
+⏺ Write(CLAUDE.md)
+  ⎿  Wrote 49 lines to CLAUDE.md
+      1 # CLAUDE.md
+      2 
+      3 This file provides guidance to Claude Code (claude.ai/code) when 
+        working with code in this repository.
+      4 
+      5 ## Project
+      6 
+      7 Fair-n-Square is a web app for fair judging at hackathons, demo d
+        ays, and class showcases. It is a group class project. So far it 
+        is a scaffold: Next.js App Router, Clerk auth, and Prisma 7 on Ne
+     … +43 lines (~3 KB) (ctrl+o to expand)
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      grep -rl "proxy.ts" node_modules/next/dist/docs | head -3; grep -rn
+      "typegen" node_modul…)
+  ⎿  node_modules/next/dist/docs/02-pages/02-guides/internationalization.md
+     node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md
+     node_modules/next/dist/docs/01-app/01-getting-started/02-project-struc
+     … +13 lines (ctrl+o to expand)
+
+⏺ I've created CLAUDE.md in the repo root. It passes prettier --check, and I
+  confirmed the Next.js claims against the docs bundled in
+  node_modules/next/dist/docs/.
+
+  It covers:
+
+  - Commands: dev, build, lint, typecheck, format, tests (including how to run
+    one test file or filter by name) and the Prisma scripts.
+  - Newer library versions: Next 16, Clerk 7, Prisma 7 and Tailwind 4 work
+    differently from what a model may remember. It points future sessions to the
+    Next.js docs that ship with the package, and lists the differences already
+    in this repo:
+    - middleware lives in src/proxy.ts
+    - LayoutProps types are generated, which is why typecheck runs next typegen
+      first
+    - Clerk's <Show when=...> component
+    - Tailwind runs through a Turbopack loader, with no PostCSS config
+  - Database setup: the CLI uses the direct (unpooled) Neon connection and the
+    app should use the pooled one through the Neon adapter. The Prisma client is
+    generated into src/generated/prisma and isn't committed, so npm run 
+    db:generate has to run after cloning.
+  - Testing limits: Vitest only picks up src/**/*.test.ts in a Node environment,
+    so .tsx and component tests need a config change first. fast-check is
+    installed for property-based tests.
+  - Conventions: Prettier defaults, LF line endings, Conventional Commit
+    prefixes and branch names.
+
+  A few gaps worth knowing about:
+
+  - No route protection: src/proxy.ts runs Clerk's middleware but doesn't
+    restrict any route yet, so everything is public. The file says so, so nobody
+    assumes otherwise.
+  - README not used: it's still the create-next-app boilerplate, so I took
+    nothing from it.
+  - Not committed: CLAUDE.md is a new file on chore/claude-md. Your edit to
+    docs/hw4/notes-ziqi.md is also still uncommitted.
+
+  You have a Codex config at ~/.codex/config.toml. I didn't read it. To bring
+  its settings into Claude Code, reply /import to see what can be imported, then
+  /import --yes=<digest> (the scan output gives the digest) to apply it. If
+  /import isn't available here, run claude import from a terminal.
+
+✻ Cooked for 46s · done 8:59 PM
+
+❯ Commit CLAUDE.md exactly as /init generated it. Do not edit it first.         
+  Stage only CLAUDE.md, then commit with this message:                          
+                                                                                
+  chore(claude): add raw CLAUDE.md generated by /init                           
+                                                                                
+  Unedited /init output, kept as a baseline so the next commit shows            
+  what we changed and why.                                                      
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      git branch --show-current && git add -- CLAUDE.md && git diff --cached
+      --name-only && gi…)
+  ⎿  chore/claude-md
+     CLAUDE.md
+     [chore/claude-md fbdf592] chore(claude): add raw CLAUDE.md generated b
+     … +8 lines (ctrl+o to expand)
+  ⎿  PostToolUse:Bash says: Tip: Run /ultrareview before you push to catch bugs 
+     with a cloud-based multi-agent review — 3 free reviews left.
+
+⏺ I committed CLAUDE.md unchanged on chore/claude-md as fbdf592, using your
+  message word for word. It was the only file in the commit.
+
+  Your edit to docs/hw4/notes-ziqi.md is still uncommitted. Nothing has been
+  pushed.
+
+✻ Worked for 5s · done 8:59 PM
+
+❯ Replace CLAUDE.md with our target version and merge in what /init found. Do   
+  not commit yet.                                                               
+                                                                                
+  1. Read the target draft at "/Users/odieyang/Documents/Projects/Group         
+  Projects/fns-drafts/CLAUDE.target.md". Use it as the base: keep its sections, 
+  order, and wording. Leave the Domain rules section exactly as written.        
+  2. Merge these facts from the current CLAUDE.md (the /init output) into the   
+  matching sections of the draft:                                               
+     - Commands: list only scripts that exist in package.json today. Add        
+  test:watch, db:generate, the single-file and -t vitest examples, and the note 
+  about copying .env.example to .env. Move test:integration, test:coverage,     
+  test:e2e, test:mutation, and db:seed into a short "Planned (not set up yet;   
+  do not run)" list.                                                            
+     - Add the "Versions are newer than most training data" section unchanged,  
+  right after Tech stack.                                                       
+     - Under Architecture, add the Prisma 7 + Neon details: URL in              
+  prisma.config.ts, DATABASE_URL_UNPOOLED for the CLI, pooled DATABASE_URL      
+  through @prisma/adapter-neon at runtime, client generated into                
+  src/generated/prisma, run db:generate after a fresh clone, import from        
+  @/generated/prisma. Say that the shared client will live in src/server/db.ts. 
+     - In Testing strategy, add that Vitest only picks up src/**/*.test.ts in   
+  the node environment, and mark integration tests, E2E tests,                  
+  tests/factories.ts, and the coverage and mutation targets as planned.         
+     - In Coding conventions, add Prettier defaults and LF line endings.        
+  3. Make these corrections to the draft:                                       
+     - Remove the @docs/prd.md line for now (docs/prd.md is added in the next   
+  commit) and the docs/sprints/ line (not used yet).                            
+     - In Don't, change the .env rule to: never read, print, or modify .env or  
+  .env.local; .env.example is the template, so update it when a new variable is 
+  added.                                                                        
+  4. Add nothing else. Show me git diff --stat and a one-line summary of each   
+  change, then stop.                                                            
+
+  Listed 1 directory (ctrl+o to expand)
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects" && cat -v
+      fns-drafts/stray-equals-file; echo; ls -la; find . -maxdepth 4 -iname
+      '*target*' -not -path '*/…)
+  ⎿  v26.5.0
+
+     total 32
+     … +19 lines (ctrl+o to expand)
+
+⏺ I stopped before changing anything, because the target draft isn't where you
+  said it would be. CLAUDE.md is still exactly as committed in fbdf592, and
+  there's nothing new in the diff to show.
+
+  /Users/odieyang/Documents/Projects/Group Projects/fns-drafts/ contains only
+  one file, stray-equals-file. It's 8 bytes and contains the text v26.5.0. I
+  also searched Group Projects/ and your home folder for anything named
+  CLAUDE.target* and found nothing.
+
+  Every step depends on that draft: its sections, order and wording, and its
+  Domain rules section copied exactly. Without it, I'd be making those up, so I
+  didn't write anything.
+
+  To continue, either:
+  - save the draft to fns-drafts/CLAUDE.target.md (or tell me where it actually
+    is), or
+  - paste its contents here.
+
+  Then I'll do the merge as you described and stop at the git diff --stat and
+  summary.
+
+✻ Worked for 17s · done 9:01 PM
+
+❯ The draft is now at "/Users/odieyang/Documents/Projects/Group                 
+  Projects/fns-drafts/CLAUDE.target.md" (156 lines). Go ahead with the merge    
+  exactly as described in my previous message, then stop at git diff --stat and 
+  the one-line summaries.                                                       
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Write(CLAUDE.md)
+  ⎿  Added 154 lines, removed 24 lines
+       1 -# CLAUDE.md                                                    
+       1 +# Fair-n-Square                                                
+       2  
+       3 -This file provides guidance to Claude Code (claude.ai/code) whe
+         -n working with code in this repository.                        
+       3 +Judging platform for hackathons, demo days, and class showcases
+         +. Organizers build a weighted rubric and invite judges and team
+         +s; judges score their assigned teams on their phones; rankings 
+         +normalize each judge's scores so winners don't depend on which 
+         +judges a team drew.                                            
+       4  
+       5 -## Project                                                     
+       5 +- Setup and human-facing overview: README.md (not auto-loaded; 
+         +read it when needed)                                           
+       6  
+       7 -Fair-n-Square is a web app for fair judging at hackathons, demo
+         - days, and class showcases. It is a group class project. So far
+         - it is a scaffold: Next.js App Router, Clerk auth, and Prisma 7
+         - on Neon Postgres, with no domain models or features yet. `docs
+         -/hw4/notes-<name>.md` files hold each team member's working not
+         -es for the assignment.                                         
+       8 -                                                               
+       7  ## Commands
+       8  
+      11 -```bash                                                        
+      12 -npm run dev            # Next.js dev server (Turbopack) on http
+         -://localhost:3000                                              
+      13 -npm run build          # production build                      
+      14 -npm run lint           # ESLint (flat config) over the repo; `n
+         -px eslint <path>` for one file                                 
+      15 -npm run typecheck      # `next typegen` then `tsc --noEmit`    
+      16 -npm run format         # Prettier write; `format:check` to veri
+         -fy only                                                        
+      17 -npm test               # Vitest, single run (passes when no tes
+         -ts exist)                                                      
+      18 -npm run test:watch     # Vitest watch mode                     
+      19 -npx vitest run src/path/to/file.test.ts      # one test file   
+      20 -npx vitest run -t "test name"                # tests matching a
+         - name                                                          
+      21 -npm run db:generate    # generate the Prisma client into src/ge
+         -nerated/prisma                                                 
+      22 -npm run db:migrate     # prisma migrate dev (uses DATABASE_URL_
+         -UNPOOLED)                                                      
+      23 -```                                                            
+       9 +- `npm run dev` — dev server at http://localhost:3000          
+      10 +- `npm run lint`, `npm run format:check`, `npm run format` — ES
+         +Lint and Prettier                                              
+      11 +- `npm run typecheck` — `tsc --noEmit`                         
+      12 +- `npm test` — unit tests (fast, no database); `npm test -- <pa
+         +th>` runs one file                                             
+      13 +- `npm run test:watch` — Vitest watch mode                     
+      14 +- `npx vitest run src/path/to/file.test.ts` — one test file    
+      15 +- `npx vitest run -t "test name"` — tests matching a name      
+      16 +- `npm run db:generate` — generate the Prisma client into `src/
+         +generated/prisma`                                              
+      17 +- `npm run db:migrate -- --name <name>` — create a Prisma migra
+         +tion                                                           
+      18  
+      19  Copy `.env.example` to `.env` and fill it in before running the
+           app or Prisma commands.
+      20  
+      21 +Planned (not set up yet; do not run):                          
+      22 +                                                               
+      23 +- `npm run test:integration` — server-layer tests against Postg
+         +res (`TEST_DATABASE_URL`)                                      
+      24 +- `npm run test:coverage` — unit + integration with coverage; C
+         +I fails below 70%                                              
+      25 +- `npm run test:e2e` — Playwright                              
+      26 +- `npm run test:mutation` — Stryker on `src/domain`            
+      27 +- `npm run db:seed` — load the demo event                      
+      28 +                                                               
+      29 +Before calling a task done, run `npm run typecheck`, `npm run l
+         +int`, and the tests that cover the change.                     
+      30 +                                                               
+      31 +## Tech stack                                                  
+      32 +                                                               
+      33 +- Next.js (App Router, Server Components, Server Actions) with 
+         +TypeScript in strict mode                                      
+      34 +- Tailwind CSS and shadcn/ui                                   
+      35 +- PostgreSQL on Neon, accessed only through Prisma             
+      36 +- Clerk for sign-in; roles live in our database (see Architectu
+         +re decisions)                                                  
+      37 +- Zod for every input that crosses a trust boundary            
+      38 +- Vitest, fast-check, Stryker, Playwright                      
+      39 +- GitHub Actions for CI; Vercel for preview and production depl
+         +oys                                                            
+      40 +- Stretch: Claude Agent SDK for AI-drafted team feedback       
+      41 +                                                               
+      42 +Exact versions are in package.json.                            
+      43 +                                                               
+      44  ## Versions are newer than most training data
+      45  
+      46  Next.js 16, React 19.3, Clerk 7, Prisma 7, Tailwind 4, and Vite
+          st 5. Their APIs differ from older versions you may remember. N
+          ext.js ships version-matched docs in `node_modules/next/dist/do
+          cs/`; check them, or the installed package's types, before rely
+          ing on memory. Specific differences already in this repo:
+     ...
+       50  - **Clerk 7** uses `<Show when="signed-in">` / `<Show when="si
+           gned-out">` (see `src/app/layout.tsx`) instead of the older `<
+           SignedIn>` / `<SignedOut>`.
+       51  - **Tailwind 4 runs through a Turbopack loader** (`@tailwindcs
+           s/turbopack` in `next.config.ts`). There is no PostCSS config.
+            Theme tokens live in `@theme` in `src/app/globals.css`.
+       52  
+       36 -## Database (Prisma 7 + Neon)                                 
+       53 +## Architecture                                               
+       54  
+       55 +Three layers. Dependencies point one way: `src/app` → `src/ser
+          +ver` → `src/domain`.                                          
+       56 +                                                              
+       57 +- `src/domain/` — pure TypeScript rules: rubric math, judge as
+          +signment, normalization, ranking, anomaly flags, event status 
+          +transitions. No imports from Next.js, Prisma, Clerk, or `src/s
+          +erver`. No `Date.now()` or `Math.random()`; pass time and seed
+          +s in as arguments.                                            
+       58 +- `src/server/` — the only code that touches the database. Eve
+          +ry action and query follows the same order: authenticate → aut
+          +horize (event role) → validate with Zod → call the domain → re
+          +ad or write with Prisma → return a DTO.                       
+       59 +- `src/app/` — routes and UI. Server Components load data thro
+          +ugh `src/server/queries`. Use Client Components only where int
+          +eraction needs them (scoring form, progress board polling).   
+       60 +                                                              
+       61 +Routes:                                                       
+       62 +                                                              
+       63 +- `/events` — events I belong to, in any role                 
+       64 +- `/events/[eventId]/manage/...` — organizer: setup, invites, 
+          +assignments, progress, results                                
+       65 +- `/events/[eventId]/judge` and `/events/[eventId]/judge/[team
+          +Id]` — judge: assigned teams, scoring form                    
+       66 +- `/events/[eventId]/team` — team: project details, released r
+          +esults                                                        
+       67 +- `/join/[token]` — accept an invite                          
+       68 +- `/api/events/[eventId]/progress` — organizer-only JSON for t
+          +he polling progress board                                     
+       69 +                                                              
+       70 +### Database (Prisma 7 + Neon)                                
+       71 +                                                              
+       72  - The datasource URL is set in `prisma.config.ts`, not in `sch
+           ema.prisma`, as Prisma 7 requires. The CLI (migrations) uses t
+           he direct connection `DATABASE_URL_UNPOOLED`.
+       39 -- At runtime the app should use the pooled `DATABASE_URL` thro
+          -ugh `@prisma/adapter-neon`. No shared client module exists yet
+          -; when one is added, use the Neon adapter with `DATABASE_URL`.
+       73 +- At runtime the app uses the pooled `DATABASE_URL` through `@
+          +prisma/adapter-neon`. The shared client will live in `src/serv
+          +er/db.ts`.                                                    
+       74  - The client is generated to `src/generated/prisma/`. That fol
+           der is gitignored and has no postinstall hook, so run `npm run
+            db:generate` after a fresh clone or a schema change, before c
+           ode that imports the client will typecheck or build. Import it
+            from `@/generated/prisma`, not `@prisma/client`.
+       75  
+       42 -## Testing                                                    
+       76 +### Architecture decisions                                    
+       77  
+       44 -Vitest only picks up `src/**/*.test.ts`, in the `node` environ
+          -ment. `.tsx` tests and DOM/component tests would need `vitest.
+          -config.mts` changed first. `fast-check` is installed for prope
+          -rty-based tests. The `@/*` alias maps to `src/*` in both tscon
+          -fig and Vitest.                                               
+       78 +1. Next.js full stack on Vercel with no separate API server: o
+          +ne deploy target and a preview per PR.                        
+       79 +2. Live progress by polling about every 5 seconds instead of W
+          +ebSockets: Vercel functions don't hold sockets, and a few seco
+          +nds of delay is fine for judging.                             
+       80 +3. Clerk handles identity only. Roles are per event (`EventMem
+          +ber`), so a user can organize one event and judge another, and
+          + authorization can be tested without Clerk.                   
+       81 +4. Business rules are pure functions in `src/domain`, so they 
+          +can be built test-first and checked with property-based and mu
+          +tation tests.                                                 
+       82 +5. Expected failures are returned as values (`{ ok: false, err
+          +or }`). Throw only for programmer errors.                     
+       83  
+       46 -## Conventions                                                
+       84 +## Domain model                                               
+       85  
+       86 +- **Event** — status `DRAFT → JUDGING → CLOSED → RELEASED`, pl
+          +us `CLOSED → JUDGING` to reopen. Has `judgesPerTeam` (k, defau
+          +lt 3) and an integer score scale (default 1–10).              
+       87 +- **Criterion** — name and integer weight; an event's weights 
+          +sum to 100. The rubric can change only in `DRAFT`.            
+       88 +- **EventMember** — `(eventId, userId, role)`, role `ORGANIZER
+          + | JUDGE | TEAM`; TEAM members also have a `teamId`.          
+       89 +- **Team** — name, description, table number, demo URL.       
+       90 +- **Conflict** — a judge–team pair that the judge or the organ
+          +izer declared.                                                
+       91 +- **Assignment** — a judge–team pair holding that judge's per-
+          +criterion scores, a comment, and `submittedAt`.               
+       92 +- **Invite** — event, role, and optional team; a random token 
+          +stored only as a hash; expires; revocable.                    
+       93 +                                                              
+       94 +## Domain rules                                               
+       95 +                                                              
+       96 +These are product decisions and the source of truth for `src/d
+          +omain`. Ask before changing any of them.                      
+       97 +                                                              
+       98 +- **Weighted score** of an assignment = Σ(weight × score) / 10
+          +0, on the event's scale.                                      
+       99 +- **Assignment, hard rules:** every team gets exactly k distin
+          +ct judges; never a conflicted judge; if a team has fewer than 
+          +k eligible judges, return an error that names it and never und
+          +er-assign silently.                                           
+      100 +- **Assignment, soft rules:** spread load evenly (with no conf
+          +licts, max load − min load ≤ 1). Same input and seed give the 
+          +same output. Re-running only fills gaps left by removed judges
+          + or new teams; existing assignments of active judges stay put.
+      101 +- **Normalization:** for each judge, z = (weighted score − tha
+          +t judge's mean) / that judge's population standard deviation, 
+          +over the judge's submitted assignments. If the standard deviat
+          +ion is 0 (including a judge with one submission), all of that 
+          +judge's z-scores are 0. A team's score is the mean z over its 
+          +submitted assignments; a team with no submissions is unranked.
+      102 +- **Invariant (property-tested):** adding a constant to every 
+          +score from one judge, or multiplying them all by a positive co
+          +nstant, leaves every team's score unchanged.                  
+      103 +- **Ranking:** team score, descending; ties go to the higher m
+          +ean weighted score; if still tied, teams share the rank (1, 1,
+          + 3). Scores within 1e-9 count as equal.                       
+      104 +- **Anomaly flags:** missing (assignment not submitted); flat 
+          +(a judge with 3 or more submissions that all have the same wei
+          +ghted score); outlier (a weighted score that differs from the 
+          +mean of at least 2 other judges on the same team by 30% or mor
+          +e of the scale range). Thresholds are named constants.        
+      105 +- **Locking:** judges can edit their own submission only while
+          + the event is `JUDGING`.                                      
+      106 +- **Visibility:** organizers see everything in their event. Ju
+          +dges see only their assigned teams and their own scores. Befor
+          +e `RELEASED`, teams see only their own team details. After `RE
+          +LEASED`, all members see the ranking, and each team also sees 
+          +its own per-criterion averages and comments. Judge names are n
+          +ever shown to teams. Nobody sees another event's data.        
+      107 +                                                              
+      108 +## Coding conventions                                         
+      109 +                                                              
+      110 +- No `any` (use `unknown` and narrow). No non-null `!` outside
+          + tests.                                                       
+      111 +- Named exports. Default exports only where Next.js requires t
+          +hem (`page`, `layout`, `route`, and similar).                 
+      112 +- Import through the `@/` alias (maps to `src/`). File names a
+          +re kebab-case; React components are PascalCase.               
+      113 +- Server actions go in `src/server/actions/<feature>.ts` and q
+          +ueries in `src/server/queries/<feature>.ts`. Return DTOs, neve
+          +r raw Prisma objects.                                         
+      114 +- Authorization goes through `requireUser()` and `requireEvent
+          +Role(eventId, roles)` in `src/server/auth.ts`. Never write ad 
+          +hoc role checks.                                              
+      115 +- Store timestamps in UTC and format them only in the UI.     
+      116 +- UI uses shadcn/ui components from `src/components/ui` and Ta
+          +ilwind classes; no new CSS files. Judge pages are mobile-first
+          + and must work at 375 px wide.                                
+      117  - Prettier with default settings (`.prettierrc.json` is `{}`).
+            Line endings are forced to LF by `.gitattributes`.
+       49 -- Commits use Conventional Commit prefixes (`chore:`, `docs(hw
+          -4):`), and branches use matching names (e.g. `chore/claude-md`
+          -).                                                            
+      118 +- Commits follow Conventional Commits with the issue number, e
+          +.g. `feat(assignment): balance judge load (#12)`. TDD commits 
+          +add `[RED]`, `[GREEN]`, or `[REFACTOR]` to the subject.       
+      119 +- Branches are `feat/<issue>-<slug>` or `fix/<issue>-<slug>`, 
+          +one PR per issue, merged with a merge commit. Never squash: it
+          + erases the TDD history.                                      
+      120 +                                                              
+      121 +## Testing strategy                                           
+      122 +                                                              
+      123 +- **Strict TDD** for everything in `src/domain` and for author
+          +ization rules, one acceptance criterion at a time:            
+      124 +  - RED: write only the test for the current criterion and run
+          + it. It must fail on an assertion, not on a syntax or import e
+          +rror. Then stop for review.                                   
+      125 +  - GREEN: write the minimum code to pass. Do not edit tests. 
+          +Do not implement later criteria.                              
+      126 +  - REFACTOR: improve the code without changing behavior; all 
+          +tests stay green.                                             
+      127 +- **Unit tests** (`src/**/*.test.ts`, next to the code): domai
+          +n functions, with fast-check properties for assignment, normal
+          +ization, and ranking. Compare floating-point values with a tol
+          +erance. Vitest only picks up `src/**/*.test.ts`, in the `node`
+          + environment.                                                 
+      128 +- **Integration tests** (planned; `tests/integration/`): serve
+          +r actions and queries against a real Postgres, never a mocked 
+          +database. Every action has tests showing that each non-permitt
+          +ed role, and members of other events, are rejected.           
+      129 +- **E2E tests** (planned; `e2e/`): one happy path per role. Th
+          +e organizer sets up and assigns, a judge scores on a mobile vi
+          +ewport, and a team sees results after release.                
+      130 +- **Targets** (planned): at least 70% coverage overall (enforc
+          +ed in CI), aiming for 90% or more in `src/domain`; mutation sc
+          +ore of 80% or more for `src/domain`.                          
+      131 +- Build test data with the factories in `tests/factories.ts` (
+          +planned). Each integration test starts from a clean database. 
+      132 +                                                              
+      133 +## Security (OWASP Top 10)                                    
+      134 +                                                              
+      135 +- **Broken access control** is the main risk here. Every actio
+          +n and query calls `requireEventRole`. Never trust an `eventId`
+          +, `teamId`, or role sent by the client: check that the resourc
+          +e belongs to the event and that the user holds the role. Middl
+          +eware only redirects signed-out users and is never the authori
+          +zation layer (CVE-2025-29927 showed it can be bypassed). Keep 
+          +results hidden until `RELEASED`, enforced on the server.      
+      136 +- **Injection:** use Prisma only, never `$queryRawUnsafe`. Val
+          +idate every input with Zod. Team descriptions and judge commen
+          +ts are untrusted, so never render them with `dangerouslySetInn
+          +erHTML`.                                                      
+      137 +- **Cryptographic failures and secrets:** secrets live only in
+          + environment variables, never in code or logs. Only `NEXT_PUBL
+          +IC_*` variables reach the browser, so no secret ever gets that
+          + prefix. Invite tokens are random (at least 128 bits), stored 
+          +hashed, expiring, and revocable.                              
+      138 +- **Security misconfiguration:** set security headers (CSP, `f
+          +rame-ancestors`, `Referrer-Policy`) in `next.config`; never re
+          +turn stack traces in production.                              
+      139 +- **Vulnerable and outdated components:** commit the lockfile,
+          + run `npm audit` in CI, and ask before adding a dependency.   
+      140 +- **Authentication failures:** Clerk owns sign-in. Check the s
+          +ession on the server for every request. No custom password cod
+          +e.                                                            
+      141 +- **Integrity and SSRF:** production deploys only from `main` 
+          +after CI passes. The server never fetches URLs that teams or j
+          +udges supplied.                                               
+      142 +- **Logging:** log authorization denials and edits rejected by
+          + locking, without secrets or personal data.                   
+      143 +- **AI feature (stretch):** treat judges' notes as untrusted i
+          +nput that may contain prompt injection. The agent gets read-on
+          +ly tools scoped to one team and writes drafts only. Nothing re
+          +aches a team until an organizer approves it.                  
+      144 +                                                              
+      145 +## Definition of Done                                         
+      146 +                                                              
+      147 +- The issue's acceptance criteria are covered by tests, and CI
+          + is green.                                                    
+      148 +- Every new action or query calls `requireEventRole`, validate
+          +s input with Zod, and has a test proving unauthorized roles ar
+          +e rejected.                                                   
+      149 +- No secrets in code, logs, or client bundles.                
+      150 +- Judge screens checked at 375 px.                            
+      151 +- The PR description includes AI disclosure (approximate % AI-
+          +generated, tools used, what the humans reviewed) and a C.L.E.A
+          +.R. review.                                                   
+      152 +- CLAUDE.md is updated if the work produced a new convention o
+          +r rule.                                                       
+      153 +                                                              
+      154 +## Do / Don't                                                 
+      155 +                                                              
+      156 +Do:                                                           
+      157 +                                                              
+      158 +- Put every scoring, assignment, and visibility rule in `src/d
+          +omain`, with tests, before wiring it to the UI.               
+      159 +- Read the scale and weights from the event's rubric.         
+      160 +- Ask when an acceptance criterion is ambiguous instead of gue
+          +ssing.                                                        
+      161 +                                                              
+      162 +Don't:                                                        
+      163 +                                                              
+      164 +- Import Prisma, Clerk, or Next.js in `src/domain`.           
+      165 +- Edit or weaken a test to make it pass.                      
+      166 +- Never read, print, or modify `.env` or `.env.local`; `.env.e
+          +xample` is the template, so update it when a new variable is a
+          +dded.                                                         
+      167 +- Run destructive database commands (`prisma migrate reset`, `
+          +prisma db push --force-reset`) or edit a merged migration. Cre
+          +ate a new migration instead.                                  
+      168 +- Show judge identities to teams, or results before release.  
+      169 +- Fetch URLs that teams or judges supplied.                   
+      170 +                                                              
+      171 +## Workflow                                                   
+      172 +                                                              
+      173 +- Use Explore → Plan → Implement → Commit for every issue. Rea
+          +d the relevant code first without editing. Plan in plan mode; 
+          +plans are saved to `docs/plans/`. Implement one plan step at a
+          + time and commit each step.                                   
+      174 +- Acceptance criteria live in the GitHub issue as Given/When/T
+          +hen. Reference the issue in commits and PRs.                  
+      175 +- One task per session. State lives in issues, plans, and comm
+          +its, so `/clear` between tasks is safe.                       
+      176 +                                                              
+      177 +## Lessons learned                                            
+      178 +                                                              
+      179 +Append a dated, one-line rule whenever Claude repeats a mistak
+          +e or a retro produces a new rule.                             
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      D="../fns-drafts/CLAUDE.target.md"; extract(){ awk '/^## Domain
+      rules/{f=1} /^## Coding…)
+  ⎿  Domain rules: identical
+     --- draft -> new CLAUDE.md
+     5d4
+     … +67 lines (ctrl+o to expand)
+
+⏺ I've merged the draft and /init's findings into CLAUDE.md. Nothing is staged
+  or committed. The Domain rules section is identical to the draft, every other
+  change is listed below, and the file passes prettier --check.
+
+   CLAUDE.md              | 178 
+  ++++++++++++++++++++++++++++++++++++++++++-------
+   docs/hw4/notes-ziqi.md |   2 +
+   2 files changed, 156 insertions(+), 24 deletions(-)
+
+  docs/hw4/notes-ziqi.md is your own uncommitted edit; I didn't change it.
+
+  Changes compared with the draft:
+  1. Base: the draft replaces the /init file, so the old "# CLAUDE.md / This
+     file provides guidance…" header is gone.
+  2. Intro links: removed the @docs/prd.md and docs/sprints/ lines, leaving only
+     the README line.
+  3. Commands: added test:watch, the two npx vitest run examples (one file, and
+     -t by name), db:generate, and the note about copying .env.example to .env.
+  4. Planned list: moved test:integration, test:coverage, test:e2e,
+     test:mutation and db:seed into "Planned (not set up yet; do not run)",
+     keeping the draft's descriptions.
+  5. Versions section: added unchanged, right after Tech stack.
+  6. Architecture: added a "Database (Prisma 7 + Neon)" subsection between
+     Routes and Architecture decisions. It covers the six points you listed and
+     says the shared client will live in src/server/db.ts.
+  7. Coding conventions: added the Prettier defaults and LF line endings bullet,
+     just before the Commits bullet.
+  8. Testing strategy: added the Vitest src/**/*.test.ts / node environment
+     sentence to Unit tests. Integration tests, E2E tests, Targets and
+     tests/factories.ts are now marked "(planned)".
+  9. Don't: replaced the .env* rule with your wording. I kept the leading
+     "Never" so the "update it" part doesn't read as something not to do.
+
+  Contradiction I didn't fix: the draft's Commands line says typecheck runs tsc 
+  --noEmit. The Versions section, and package.json, say it runs next typegen
+  first. I left the draft's wording because you said to add nothing else.
+  Changing that line to "next typegen then tsc --noEmit" would fix it if you
+  want.
+
+✻ Crunched for 2m 2s · done 9:04 PM
+
+❯ Three small fixes to CLAUDE.md, nothing else:                                 
+  1. Commands: change the typecheck line to "npm run typecheck — next typegen,  
+  then tsc --noEmit", and add "npm run build — production build" right after    
+  the npm run dev line.                                                         
+  2. Don't: replace the .env line with "Read, print, or modify .env or          
+  .env.local."                                                                  
+  3. Do: add "Update .env.example whenever you add an environment variable."    
+     Show me the changed lines, then stop.                                      
+
+⏺ Update(CLAUDE.md)
+  ⎿  Added 2 lines, removed 1 line
+       7  ## Commands
+       8  
+       9  - `npm run dev` — dev server at http://localhost:3000
+      10 +- `npm run build` — production build                           
+      11  - `npm run lint`, `npm run format:check`, `npm run format` — ES
+          Lint and Prettier
+      11 -- `npm run typecheck` — `tsc --noEmit`                         
+      12 +- `npm run typecheck` — `next typegen`, then `tsc --noEmit`    
+      13  - `npm test` — unit tests (fast, no database); `npm test -- <pa
+          th>` runs one file
+      14  - `npm run test:watch` — Vitest watch mode
+      15  - `npx vitest run src/path/to/file.test.ts` — one test file
+
+⏺ Update(CLAUDE.md)
+  ⎿  Added 1 line, removed 1 line
+      164  
+      165  - Import Prisma, Clerk, or Next.js in `src/domain`.
+      166  - Edit or weaken a test to make it pass.
+      167 -- Never read, print, or modify `.env` or `.env.local`; `.env.e
+          -xample` is the template, so update it when a new variable is a
+          -dded.                                                         
+      167 +- Read, print, or modify `.env` or `.env.local`.              
+      168  - Run destructive database commands (`prisma migrate reset`, `
+           prisma db push --force-reset`) or edit a merged migration. Cre
+           ate a new migration instead.
+      169  - Show judge identities to teams, or results before release.
+      170  - Fetch URLs that teams or judges supplied.
+⏺ Update(CLAUDE.md)
+  ⎿  Added 1 line
+      159  - Put every scoring, assignment, and visibility rule in `src/d
+           omain`, with tests, before wiring it to the UI.
+      160  - Read the scale and weights from the event's rubric.
+      161  - Ask when an acceptance criterion is ambiguous instead of gue
+           ssing.
+      162 +- Update `.env.example` whenever you add an environment variab
+          +le.                                                           
+      163  
+      164  Don't:
+      165  
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      cp CLAUDE.md "$TMPDIR/x" 2>/dev/null; diff -U0 <(git show :CLAUDE.md
+      2>/dev/null | head…)
+  ⎿  head: illegal line count -- 0
+     Checking formatting...
+     All matched files use Prettier code style!
+     … +5 lines (ctrl+o to expand)
+
+⏺ Bash(rm -f "$TMPDIR/x")
+  ⎿  Done
+
+⏺ I made the three fixes to CLAUDE.md. Nothing is committed, and the file still
+  passes prettier --check.
+
+  The changed lines:
+
+  10:  - `npm run build` — production build
+  12:  - `npm run typecheck` — `next typegen`, then `tsc --noEmit`
+  162: - Update `.env.example` whenever you add an environment variable.
+  168: - Read, print, or modify `.env` or `.env.local`.
+
+  - Commands: line 10 is the new build line, right after dev. Line 12 is the
+    corrected typecheck line, which now matches the Versions section and
+    package.json.
+  - Do: line 162 is the new .env.example rule, added as the last item.
+  - Don't: line 168 is the shortened .env rule.
+
+✻ Baked for 14s · done 9:05 PM
+
+❯ Commit CLAUDE.md with a message explaining what changed and why               
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      git add -- CLAUDE.md && git diff --cached --name-only && git commit -F -
+      <<'EOF'
+      chore(c…)
+  ⎿  CLAUDE.md
+     [chore/claude-md e197876] chore(claude): replace /init output with the
+      team CLAUDE.md
+     … +7 lines (ctrl+o to expand)
+
+⏺ I committed the merged CLAUDE.md on chore/claude-md as e197876, with only that
+  file staged. Its diff against the raw /init commit (fbdf592) is the merge
+  plus your three fixes. Nothing has been pushed.
+
+  The commit message:
+
+  chore(claude): replace /init output with the team CLAUDE.md
+
+  Use the team's target draft (product and domain rules, architecture,
+  testing, security, workflow) as the base, and keep the repo facts that
+  /init found and the draft lacked.
+
+  Kept from /init:
+  - Commands for scripts that exist today: build, test:watch,
+    db:generate, single-file and -t Vitest runs, and copying
+    .env.example to .env before running the app
+  - "Versions are newer than most training data": proxy.ts in Next 16,
+    generated route prop types, Clerk 7 <Show>, Tailwind via Turbopack
+  - Prisma 7 + Neon: URL in prisma.config.ts, the unpooled URL for the
+    CLI, the pooled URL through @prisma/adapter-neon at runtime, and the
+    gitignored client in src/generated/prisma (run db:generate after a
+    fresh clone); the shared client will live in src/server/db.ts
+  - Vitest only picks up src/**/*.test.ts in the node environment;
+    Prettier defaults and LF line endings
+
+  Corrections to the draft:
+  - Move test:integration, test:coverage, test:e2e, test:mutation and
+    db:seed to a "Planned (not set up yet; do not run)" list, and mark
+    integration tests, E2E tests, test factories and the coverage and
+    mutation targets as planned, so Claude doesn't run or rely on
+    tooling that doesn't exist yet
+  - typecheck runs next typegen before tsc, matching package.json
+  - Drop the @docs/prd.md import, since the PRD lands in the next
+    commit, and the docs/sprints/ pointer, which isn't used yet
+  - Narrow the .env rule to .env and .env.local and add a Do rule to
+    keep .env.example updated; the old .env* pattern also blocked
+    editing the template
+
+  There's no issue number in the subject, even though the new CLAUDE.md asks for
+  one, because this work has no GitHub issue. Your edit to
+  docs/hw4/notes-ziqi.md is still uncommitted.
+
+✻ Cooked for 20s · done 9:06 PM
+
+❯ docs/prd.md now exists (the finalized proposal). In CLAUDE.md, add this line  
+  as the first bullet of the list under the intro paragraph, and change nothing 
+  else:                                                                         
+                                                                                
+  - Product requirements and user stories: @docs/prd.md                         
+                                                                                
+  Then stage only docs/prd.md and CLAUDE.md, and commit with this message:      
+                                                                                
+  docs: add PRD and import it from CLAUDE.md                                    
+                                                                                
+  docs/prd.md is the finalized P3 proposal: problem, users, user stories,       
+  and scope. CLAUDE.md imports it with @docs/prd.md so every session            
+  starts with the product context. The file stays short because imports         
+  load into every session.                                                      
+  ⎿  Read docs/prd.md (35 lines)
+
+⏺ Update(CLAUDE.md)
+  ⎿  Added 1 line
+      2  
+      3  Judging platform for hackathons, demo days, and class showcases.
+          Organizers build a weighted rubric and invite judges and teams;
+          judges score their assigned teams on their phones; rankings nor
+         malize each judge's scores so winners don't depend on which judg
+         es a team drew.
+      4  
+      5 +- Product requirements and user stories: @docs/prd.md           
+      6  - Setup and human-facing overview: README.md (not auto-loaded; r
+         ead it when needed)
+      7  
+      8  ## Commands
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      git status --short && git diff -- CLAUDE.md && npx prettier --check
+      CLAUDE.md docs/prd.m…)
+  ⎿   M CLAUDE.md
+      M docs/hw4/notes-ziqi.md
+     ?? docs/prd.md
+     … +18 lines (ctrl+o to expand)
+
+⏺ Bash(cd "/Users/odieyang/Documents/Projects/Group Projects/Fair-n-Square" &&
+      git add -- docs/prd.md CLAUDE.md && git diff --cached --name-only && git
+      commit -F - <<'…)
+  ⎿  CLAUDE.md
+     docs/prd.md
+     [chore/claude-md f55b0aa] docs: add PRD and import it from CLAUDE.md
+     … +6 lines (ctrl+o to expand)
+
+⏺ I added the @docs/prd.md line as the first bullet under the intro paragraph;
+  nothing else in CLAUDE.md changed. Then I committed it with docs/prd.md as
+  f55b0aa on chore/claude-md, using your message word for word. Both files pass
+  prettier --check, and nothing has been pushed.
+
+  The branch now has three commits on top of the scaffold:
+
+  f55b0aa docs: add PRD and import it from CLAUDE.md
+  e197876 chore(claude): replace /init output with the team CLAUDE.md
+  fbdf592 chore(claude): add raw CLAUDE.md generated by /init
+
+  The only uncommitted change left is your edit to docs/hw4/notes-ziqi.md.
+
+✻ Brewed for 10s · done 9:08 PM
