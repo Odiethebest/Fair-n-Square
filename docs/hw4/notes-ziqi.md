@@ -7,3 +7,5 @@
 - 2026-11-18 21:07 - step 3 done (e197876). Lesson candidate: CLAUDE.md requires an issue number, but setup work has no issue
 - 2026-11-18 21:16 - step 5: permissions on chore/permissions (removed temporary settings.local.json)
 - 2026-11-18 21:27 - Part 1 steps 1-5 done (PR #1, PR #2). Created Part 2 issue.
+- 2026-11-19 10:43 - Lesson candidate: session exports broke format:check; npm run format could rewrite evidence. Fixed via .prettierignore
+- 2026-11-19 12:54 - Explore done. No Glob/Grep tools on native macOS build 2.1.325 (removed in 2.1.117); Claude used Read + read-only shell search and said so. Lesson candidate.
