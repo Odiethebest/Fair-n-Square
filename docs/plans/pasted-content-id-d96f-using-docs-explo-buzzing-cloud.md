@@ -55,6 +55,13 @@ Files:
     | `scale_max_invalid` | `["scaleMax"]` |
     | `scale_min_not_below_max` (checked only when both are valid, after defaults) | `["scaleMax"]` |
 
+  - Edge cases found while writing the tests (confirmed 2026-11-19):
+    1. `weights_sum_not_100` is checked only when there is at least one criterion and every weight is valid, so an empty rubric reports only `criteria_missing`.
+    2. Blank names are never duplicates of each other; each blank row gets only `criterion_name_required`.
+    3. Every row that repeats an earlier name is flagged (Impact, IMPACT, impact → rows 1 and 2), and the first occurrence is not.
+    4. `Infinity` is an invalid weight, along with 0, negative numbers, non-integers, and `NaN`.
+    5. Scale defaults apply to each bound separately before min < max is checked: min 5 with max blank is 5–10, and min 10 with max blank fails `scale_min_not_below_max`.
+
 - `src/domain/rubric.test.ts`
   - Valid draft: `DRAFT` status, trimmed names, positions 0..n−1 in entered order.
   - Defaults when blank; custom k = 5 and scale 0–100 accepted.
