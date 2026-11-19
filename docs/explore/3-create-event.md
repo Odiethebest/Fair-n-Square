@@ -1,132 +1,105 @@
 # Explore: #3 Organizer creates an event with a weighted rubric
 
-Date: 2026-11-18 · Branch: `feat/3-create-event` · Phase: Explore (read-only)
+2026-11-19 · Explore phase (read-only) · Issue #3 (US1)
 
 ## Summary
 
-The repo is a create-next-app scaffold with Clerk wired in and a Prisma schema with no models. Everything #3 needs is missing:
-models, migrations, `src/domain`, `src/server`, shadcn/ui, and both routes. The rubric and settings rules (AC2, AC3) are pure
-and can be built test-first now. Persistence, the redirect, and access control (AC1, AC4) need integration or E2E tooling that
-is still only planned. Decide the generator, schema scope, dependencies, error shapes, and the authorization-test approach
-before planning.
+The repo is still a scaffold. It has a root layout with Clerk buttons, the create-next-app home page, `src/proxy.ts` running `clerkMiddleware()`, and a Prisma schema with no models, no migrations, and no generated client. Because #3 is the first vertical slice, it also has to build the foundations later issues depend on: the schema and first migration, `src/server/db.ts`, `src/server/auth.ts`, the first `src/domain` module, and the first form. CLAUDE.md assumes two dependencies that aren't installed (Zod as a direct dependency, shadcn/ui). The integration and E2E tooling that AC1 and AC4 need is still only planned. We can unit-test the AC2 and AC3 rules and a pure authorization rule now.
 
 ## What exists
 
-- **App:** `src/app/layout.tsx` wraps everything in `<ClerkProvider>`, with a header using `<Show when="signed-out|signed-in">`.
-  `page.tsx` is the create-next-app placeholder. There is no `not-found.tsx`.
-- **Proxy:** `src/proxy.ts` is a bare `clerkMiddleware()`. Its matcher skips `_next` and static files and always runs for `/api`
-  and `/__clerk`. It only attaches auth state, so every route is public. Server Actions are POSTs to their page's route, so
-  they pass through the same matcher.
-- **Clerk 7.10.4** (`@clerk/nextjs/server`):
-  - `auth()` returns `userId: string | null` plus `redirectToSignIn()`.
-  - `auth.protect()` redirects document requests to sign-in when signed out, but returns **404 for non-document requests**.
-  - `currentUser()` calls the Backend API, which is rate-limited.
-  - `createRouteMatcher` is **deprecated** in favour of checks in each page or Server Function, which matches CLAUDE.md.
-  - There's no `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, so sign-in uses the hosted Account Portal.
-- **Next.js 16.4.6 docs:**
-  - Every `'use server'` action is a public POST. Authenticate, authorize, and validate inside it (a page-level check doesn't
-    cover it). Return DTOs. There's a built-in CSRF Origin check and a 1 MB body limit.
-  - **Forms:** `useActionState(action, init)` gives `[state, formAction, pending]`, and the action's signature becomes
-    `(prevState, formData)`. Showing errors requires a Client Component for the form.
-  - **`redirect()`:** throws `NEXT_REDIRECT`, so call it outside `try/catch` and after `revalidatePath`. It defaults to `push` in
-    actions and returns 303 for no-JS posts.
-  - **`notFound()`:** throws, and must run on the render path. A `try/catch` swallows it unless `unstable_rethrow` is used.
-    `unauthorized()`/`forbidden()` need the experimental `authInterrupts` flag, so `notFound()` fits AC4.
-  - The docs recommend a `server-only` DAL that returns DTOs; Next handles `import 'server-only'` without the package.
-- **Prisma 7.10.1:**
-  - `prisma.config.ts` points the CLI at `DATABASE_URL_UNPOOLED`.
-  - `schema.prisma` has a `postgresql` datasource with no URL and **no models**. Its generator is `prisma-client-js`, with output
-    to `src/generated/prisma`; the installed CLI labels this generator **"Legacy"** (the current one is `prisma-client`).
-  - `PrismaClient` **requires** `adapter` or `accelerateUrl`. `@prisma/adapter-neon` exports `new PrismaNeon({ connectionString })`
-    (a WebSocket pool that supports transactions); Node 26 locally and Node 24 on Vercel have a global `WebSocket`.
-  - No migrations exist, and `src/generated/` hasn't been generated.
-- **Tooling:** Vitest only picks up `src/**/*.test.ts` in the `node` environment (no DOM or `.tsx` tests). fast-check 4.10.3 is
-  installed. The ESLint config ignores `src/generated/**`. `tsconfig` has strict mode and `@/*` alias.
-- **Styling:** Tailwind 4 in `globals.css` with a minimal `@theme inline`.
+- `src/app/layout.tsx`: `ClerkProvider`, plus `<Show when="signed-out|signed-in">` with SignIn/SignUp/UserButton, typed with the generated `LayoutProps<"/">`. `page.tsx` is the create-next-app placeholder. There are no `/events` routes and no `not-found.tsx`.
+- `src/proxy.ts`: `export default clerkMiddleware()` with the standard matcher (all non-static paths, `/api`, `/__clerk`). It protects no routes, so everything is public, but it makes `auth()` work in pages and actions.
+- `prisma/schema.prisma`: generator `prisma-client-js` with output `../src/generated/prisma`; `postgresql` datasource with no URL; no models. `prisma.config.ts` loads `dotenv/config` and uses `env("DATABASE_URL_UNPOOLED")`.
+- `.env.example`: the two Neon URLs and the Clerk keys. No Clerk sign-in/after-sign-in URL variables.
+- `vitest.config.mts`: `node` environment, `src/**/*.test.ts`, `@` alias. `next.config.ts` only has the Tailwind Turbopack loader (no security headers).
+- `.claude/settings.json`: `npm install` and `db:migrate` require approval; reading `.env` is denied.
+- Installed versions: next 16.4.6, react 19.3.0, @clerk/nextjs 7.10.4, prisma / @prisma/client / @prisma/adapter-neon 7.10.1, @neondatabase/serverless 1.2.1, vitest 5.1.1, fast-check 4.10.3. Local Node is v26.5.0.
+
+**Clerk 7.10 (checked in installed types and source)**
+
+- `auth()` from `@clerk/nextjs/server` returns `{ userId, redirectToSignIn, ... }` in Server Components, Route Handlers, and Server Actions. It requires `clerkMiddleware`, which we have. `currentUser()` calls Clerk's rate-limited Backend API, and we only need `userId`.
+- When the user is signed out, `auth.protect()` redirects page requests to sign-in, returns 401 for Server Action requests, and returns 404 for anything else (`dist/esm/server/protect.js`).
+- `createRouteMatcher` is `@deprecated`: "Move auth checks into each page, layout, API route, or Server Function." That matches CLAUDE.md's rule that the proxy is never the authorization layer.
+
+**Next.js 16.4 (from `node_modules/next/dist/docs/`)**
+
+- A Server Action is a public POST endpoint. Every action must authenticate, authorize, validate, and return only what the UI needs (`02-guides/server-actions.md#security`).
+- To show form errors, use a Client Component with `useActionState(action, initialState)`. The action's signature then becomes `(prevState, formData)`.
+- `redirect()` throws `NEXT_REDIRECT`. Inside an action it does a client-side navigation, or a 303 without JS. `notFound()` throws a 404 fallback error. Both must be called outside `try/catch` (or rethrown with `unstable_rethrow`).
+- Auth checks in a layout don't re-run on navigation and don't block child segments, so the checks belong in pages or the data layer. `params` is a Promise; type pages with `PageProps<"/events/[eventId]/manage">`.
+
+**Prisma 7.10**
+
+- `PrismaClient` requires `adapter` (or `accelerateUrl`). `new PrismaNeon({ connectionString })` uses a WebSocket pool and supports transactions; `PrismaNeonHttp` is the HTTP variant. Node 22+ has a global `WebSocket`, so we don't need the `ws` package.
+- The CLI labels `prisma-client-js` "Legacy". The current generator is `prisma-client`, and the type docs import it from `./generated/prisma/client`. CLAUDE.md's `@/generated/prisma` import only works with the legacy generator.
 
 ## What's missing
 
-- **Prisma models:** `Event`, `Criterion`, `EventMember`, and enums `EventStatus` and `Role`, plus the first migration.
-- **`src/server/db.ts`:** a `PrismaNeon` + `PrismaClient` singleton, cached on `globalThis` in dev.
-- **`src/server/auth.ts`:** `requireUser()` and `requireEventRole(eventId, roles)`.
-- **`src/server/actions/events.ts`** (`createEvent`) and **`src/server/queries/events.ts`** (the manage-page DTO).
-- **`src/domain/`:** rubric and event-settings validation with their tests.
-- **Routes:** `src/app/events/new/page.tsx` plus a client form, and `src/app/events/[eventId]/manage/page.tsx`.
-- **Dependencies:** `zod` is **not in package.json**; 4.6.7 is installed only through `eslint-plugin-react-hooks`.
-  **shadcn/ui is not initialized** (no `components.json`, `src/components/ui`, `clsx`, or `tailwind-merge`).
-- **Testing:** no integration tests, Playwright, `tests/factories.ts`, or `TEST_DATABASE_URL`.
+- `src/generated/prisma` (never generated) and `prisma/migrations/` (this issue's migration will be the first).
+- Models: `Event` (name, status, judgesPerTeam, scaleMin, scaleMax, timestamps), `Criterion` (eventId, name, weight, position), `EventMember` (eventId, userId, role, teamId?), and the enums `EventStatus` and `EventRole`.
+- `src/server/`: `db.ts` (a singleton, so dev hot reloads don't create extra pools), `auth.ts` (`requireUser`, `requireEventRole`), `actions/events.ts`, `queries/events.ts`.
+- `src/domain/`: nothing exists yet. This issue needs rubric validation and event settings with defaults.
+- Routes: `events/new/page.tsx` plus a client form, `events/[eventId]/manage/page.tsx`, and `not-found.tsx`.
+- Dependencies: `zod` 4.6.7 is installed only transitively (via eslint-plugin-react-hooks), so it isn't declared and could disappear. shadcn/ui isn't initialized (no `components.json`, no `src/components/ui`, no clsx/tailwind-merge/cva).
+- Tooling: no `.github/` (no CI), no `tests/` or `tests/factories.ts`, no integration or Playwright setup, no logging convention.
 
 ## Constraints from CLAUDE.md
 
-- **Layers:** `app → server → domain`. The domain has no Next, Prisma, or Clerk imports and no `Date.now()` or `Math.random()`.
-  The rubric rules go in the domain before any UI: sum = 100, positive integer weights, unique non-empty names, at least one
-  criterion, k ≥ 1, and integer min < max.
-- **Action order:** authenticate → authorize → Zod → domain → Prisma → DTO. Expected failures are `{ ok: false, error }`.
-  Throw only for programmer errors. Never trust a client-sent `eventId` or role.
-- **Authorization:** use `requireUser()` and `requireEventRole()` only, with no ad hoc checks. Proxy is not the authorization
-  layer. Log denials without secrets or personal data.
-- **Conventions:** no `any` and no `!`. Use named exports, `@/` imports, and kebab-case files. Import the client from
-  `@/generated/prisma`. Return DTOs, store timestamps in UTC, and use shadcn/ui and Tailwind with no new CSS.
-- **Do/Don't:** ask before adding a dependency. Update `.env.example` for new variables. Never read `.env`. Never run
-  `migrate reset`. Ask when an acceptance criterion is ambiguous.
-- **TDD and DoD:**
-  - Strict RED → review stop → GREEN → REFACTOR for domain and authorization rules, one acceptance criterion at a time.
-  - Commits are tagged `[RED]`/`[GREEN]`/`[REFACTOR]` with `(#3)`.
-  - Every new action or query needs a test showing that unauthorized roles are rejected.
-  - Run typecheck, lint, and tests before calling it done.
-  - The PR needs AI disclosure and a C.L.E.A.R. review, and is merged with a merge commit.
+- Layers go `app → server → domain`. The rubric rules live in `src/domain`, which must not import Next, Prisma, Clerk, or `src/server`. Zod validation sits at the trust boundary in `src/server`.
+- Action order: authenticate → authorize → Zod → domain → Prisma → DTO. Creating an event has no event to check a role against, so authorization here is just `requireUser()`. The manage page uses `requireEventRole(eventId, ["ORGANIZER"])`. Ad hoc role checks aren't allowed.
+- Don't trust the `eventId` route param: validate it, and scope the query to the user's membership. Return DTOs, never raw Prisma objects.
+- Expected failures are returned as values (`{ ok: false, error }`), which fits AC2. `redirect()` and `notFound()` are thrown control flow, so we need to decide how they fit that convention (Open question 9).
+- Domain rules: weights are integers summing to 100, k defaults to 3, the scale defaults to 1–10, and a new event starts in `DRAFT`. Ask before changing any of these. Timestamps are stored in UTC.
+- Strict TDD for domain and authorization rules: RED (stop for review) → GREEN → REFACTOR, one acceptance criterion at a time. Commits look like `feat(rubric): ... (#3) [RED]`, on a branch named `feat/3-<slug>` that is merged without squashing.
+- Code: named exports (default exports only for page/layout), kebab-case file names, `@/` imports, no `any`, no `!`.
+- UI: shadcn/ui and Tailwind with no new CSS files. Use Client Components only where needed; adding and removing criteria rows and showing errors need one.
+- Before adding a dependency, ask. Update `.env.example` for any new variable. Before calling the work done, run `typecheck` (which now needs `db:generate` first), `lint`, and the tests.
+
+Rules the repo can't satisfy yet:
+
+- "Zod for every input": `zod` isn't a declared dependency.
+- "shadcn/ui from `src/components/ui`": not initialized.
+- Definition of Done says every action and query has a test showing unauthorized roles are rejected, against a real database. The integration harness is only planned.
+- Definition of Done says "CI is green", but there is no CI workflow.
+- Security headers in `next.config` and logging of authorization denials don't exist yet.
 
 ## Testability
 
-| AC           | Unit-testable now (Vitest, `src/domain`)                                                 | Needs planned tooling                                                              |
-| ------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| AC1 create   | A pure function that builds the draft (status `DRAFT`, criteria, creator as `ORGANIZER`) | Saving, membership, redirect, and the manage page: integration + E2E               |
-| AC2 invalid  | One error code per rule, plus fast-check properties                                      | "Nothing saved": integration; message shown in the form: E2E                       |
-| AC3 defaults | Defaults k = 3 and scale 1–10; the k and scale rules                                     | None, if Zod parsing of blank (`""`) fields sits in a plain `.ts`                  |
-| AC4 access   | A pure "member holds one of these roles" decision                                        | `requireEventRole` against the DB: integration; sign-in redirect and 404 page: E2E |
+| AC                 | Unit-testable now (Vitest, pure code)                                                                                                             | Needs planned tooling                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC1 create         | A domain builder that turns valid input into an event in `DRAFT` with ordered criteria                                                            | Integration: event, criteria, and `ORGANIZER` membership are saved in one transaction. E2E: redirect to `/manage`, which shows the name and rubric           |
+| AC2 invalid rubric | Each rule: sum ≠ 100, weight not a positive integer, empty name, duplicate name, no criteria; the error names the rule. Zod parsing of `FormData` | Integration: nothing is saved. E2E: the message is shown                                                                                                     |
+| AC3 defaults       | k = 3 and scale 1–10 when blank; k must be an integer ≥ 1; scale must be integers with min < max                                                  | Integration: the defaults are persisted                                                                                                                      |
+| AC4 access         | Pure rule: the user holds `ORGANIZER` for this event (given memberships, no Clerk)                                                                | Integration: `requireEventRole` rejects JUDGE, TEAM, non-members, and other events' members. E2E: signed-out users go to sign-in; a non-organizer gets a 404 |
+
+Actions that call `auth()` and `redirect()` need a request context. Integration tests will need a seam to inject the user (fake Clerk, real database). Vitest only runs `*.test.ts` in `node`, so testing the form component would need new dependencies.
 
 ## Open questions
 
-1. **Generator:** keep the legacy `prisma-client-js`, or switch to `prisma-client`? Switching changes the import to
-   `@/generated/prisma/client` and requires a CLAUDE.md edit.
-2. **Schema scope:** add only `Event`, `Criterion`, and `EventMember`, or the full model? `EventMember.teamId` needs `Team`, or a
-   nullable column for now.
-3. **User identity:** store the Clerk `userId` string in `EventMember`, or add a `User` table?
-4. **Dependencies:** approve `zod` as a direct dependency? Initialize shadcn/ui now (it adds `clsx`, `tailwind-merge`, Radix,
-   and more), or use plain Tailwind for this issue?
-5. **Rubric details:** trim names? Compare duplicates case-insensitively? Maximum name lengths and criterion count? Weights
-   limited to 1–100? Keep the entered order (a `position` column)? Report all failing rules, or only the first?
-6. **Scale and k:** can min be ≤ 0? Is there an upper bound on k or on the scale range?
-7. **AC4 gaps:**
-   - For a signed-out visitor on `/manage`: sign-in redirect or 404?
-   - For a signed-out POST to `createEvent`: an error value or a redirect?
-   - Can any signed-in user create an event?
-   - Hosted Account Portal, or an in-app `/sign-in`?
-8. **`requireEventRole` contract:** return `{ ok: false }` and let pages call `notFound()`, or throw? Rule 5 says to return values.
-9. **Authorization tests:** set up integration tests now (`TEST_DATABASE_URL` on a separate Neon branch) to meet the DoD, or
-   unit-test the pure decision and defer the DB test?
-10. **Migration:** OK to run `npm run db:migrate -- --name init` against the dev Neon database?
+1. Should we set up `test:integration` (a Neon test branch and `TEST_DATABASE_URL`) in #3, or ship unit tests plus manual checks and open a follow-up issue? Definition of Done requires the role-rejection test.
+2. Can we add `zod` (v4) as a direct dependency and initialize shadcn/ui? shadcn adds clsx, tailwind-merge, cva, and Radix. The alternative is plain Tailwind for now.
+3. Keep the legacy `prisma-client-js` generator (which matches CLAUDE.md), or switch to `prisma-client` (import from `@/generated/prisma/client` and update CLAUDE.md)?
+4. Should the first migration hold only Event, Criterion, and EventMember, or the whole domain model? `EventMember.teamId` needs a `Team` table.
+5. Should `EventMember.userId` store the Clerk user ID directly, with no `User` table? Organizers will need display names later.
+6. Rubric details the acceptance criteria don't settle: Trim names? Treat duplicates case-insensitively? Limits on the number of criteria and on name lengths? Upper bounds on k and on the scale (can min be 0 or negative)? Should criteria keep the order they were entered in (`position`)?
+7. AC2 "says which rule failed": report the first failure or all of them? Per row or for the whole form? Should the domain return error codes and the UI map them to messages?
+8. A signed-out visitor on `/events/[eventId]/manage`: sign-in or 404? Should a nonexistent event return the same 404 as "not an organizer"? I recommend yes, to prevent ID enumeration.
+9. How should `requireUser` handle a signed-out user: `auth.protect()` (redirect for pages, 401 for actions) or `auth()` plus `redirectToSignIn()`? Should `requireEventRole` throw `notFound()` or return a value?
+10. Keep the proxy public and do every check in server code, as Clerk's deprecation suggests, or also add a signed-out redirect for `/events(.*)` in the proxy?
+11. Which Neon branch does `db:migrate` target, and do we share it with Yunhong? What should the ID format be (cuid or uuid)? This affects the Zod param check.
+12. Clerk's hosted Account Portal or local sign-in pages? Local pages need `NEXT_PUBLIC_CLERK_SIGN_IN_URL` and related variables in `.env.example`.
 
-**Risks:**
+Risks:
 
-- `auth.protect()` returns 404 to signed-out non-document requests. Calling `auth()` and `redirectToSignIn()` explicitly in
-  pages makes the behaviour predictable.
-- A `try/catch` around `redirect()` or `notFound()` silently breaks both.
-- Without a `globalThis` client cache, dev hot reloads open new Neon pools.
-- The event, criteria, and organizer membership must be written in one atomic nested create.
-- Without integration or E2E tests, AC1 and AC4 rely on manual checks.
+- A `try/catch` around `redirect()` or `notFound()` swallows them.
+- If the event, criteria, and membership aren't saved in one nested create or `$transaction`, a failure can leave a partial save, which breaks AC2's "nothing saved". Use `PrismaNeon`, not the HTTP adapter.
+- React 19 resets uncontrolled inputs after an action. Unless the form state is controlled or sent back, a validation error wipes the organizer's criteria.
 
 ## Files read
 
-- **Project:** `CLAUDE.md`, `docs/prd.md` (auto-loaded), `README.md`, `package.json`, `.env.example`, `.gitignore`,
-  `.claude/settings.json`, `next.config.ts`, `prisma.config.ts`, `prisma/schema.prisma`, `tsconfig.json`, `vitest.config.mts`,
-  `eslint.config.mjs`, `src/proxy.ts`, `src/app/{layout.tsx,page.tsx,globals.css}`. Issue #3 through `gh issue view 3`.
-- **Clerk** (`node_modules/@clerk/nextjs/dist/types/`): `server/{index,protect,clerkMiddleware,routeMatcher}.d.ts`,
-  `app-router/server/{auth,currentUser}.d.ts`.
-- **Next** (`node_modules/next/dist/docs/01-app/`): `02-guides/server-actions.md`, `02-guides/forms.md` (validation section),
-  `02-guides/data-security.md` (DAL and mutation sections), `03-api-reference/04-functions/{redirect,not-found}.md`,
-  `03-api-reference/03-file-conventions/proxy.md` (grep only).
-- **Prisma:** `@prisma/adapter-neon/{package.json,dist/index.d.ts}`, `@prisma/client/package.json`,
-  `@prisma/client/runtime/client.d.ts` (constructor options), `prisma/build/cli.js` (grep only). Versions came from each
-  package's `package.json`, plus `npm ls zod`.
-- **Not opened:** `.env` (denied by policy), `docs/hw4/**`.
+- `gh issue view 3`. CLAUDE.md and `docs/prd.md` were loaded into context automatically. I didn't open `.env` (the settings deny it).
+- Repo: `package.json`, `prisma/schema.prisma`, `prisma.config.ts`, `src/proxy.ts`, `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/globals.css`, `next.config.ts`, `vitest.config.mts`, `tsconfig.json`, `.env.example`, `eslint.config.mjs`, `README.md`, `.gitignore`, `.claude/settings.json`.
+- Clerk (`node_modules/@clerk/nextjs/dist/`): `types/server/index.d.ts`, `types/app-router/server/auth.d.ts`, `types/server/protect.d.ts`, `types/app-router/server/currentUser.d.ts`, `types/server/routeMatcher.d.ts`, `esm/server/protect.js`.
+- Next docs (`node_modules/next/dist/docs/01-app/`): `02-guides/forms.md`, `02-guides/server-actions.md` (Security, Cache, Config), `02-guides/authentication.md` (Authorization sections), `03-api-reference/04-functions/redirect.md`, `03-api-reference/04-functions/not-found.md`, `03-api-reference/03-file-conventions/proxy.md` (intro and headings).
+- Prisma and Neon: `@prisma/adapter-neon/dist/index.d.ts`, `@prisma/client/package.json`, `@prisma/client/runtime/client.d.ts` (`PrismaClientOptions`), `@neondatabase/serverless/index.d.ts` (`webSocketConstructor`). I also searched `prisma/build/cli.js`, `prisma/build/index.js`, and `@prisma/client/runtime/client.js` for generator names and adapter checks, plus `package.json` versions of the installed packages.
