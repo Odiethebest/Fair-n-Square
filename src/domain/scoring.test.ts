@@ -1,3 +1,4 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
   type Assignment,
@@ -139,5 +140,106 @@ describe("teamScores", () => {
       B: expect.closeTo(0, 9),
       C: expect.closeTo(1, 9),
     });
+  });
+});
+
+describe("teamScores invariance (AC5)", () => {
+  // With weights summing to 100 and integer scores 1-10, sum(weight x score) is
+  // an integer in [100, 1000], so a weighted score is that integer / 100.
+  const weightedScoreArb = fc
+    .integer({ min: 100, max: 1000 })
+    .map((n) => n / 100);
+
+  // A few judges, each assigned to every team; each assignment is either
+  // submitted (a weighted score) or not submitted (null). At least one is
+  // submitted.
+  const assignmentsArb = fc
+    .record({
+      judges: fc.integer({ min: 1, max: 4 }),
+      teams: fc.integer({ min: 1, max: 5 }),
+    })
+    .chain(({ judges, teams }) =>
+      fc
+        .array(fc.option(weightedScoreArb, { nil: null }), {
+          minLength: judges * teams,
+          maxLength: judges * teams,
+        })
+        .map((scores) =>
+          scores.map((weightedScore, i): Assignment => ({
+            judgeId: `J${Math.floor(i / teams)}`,
+            teamId: `T${i % teams}`,
+            weightedScore,
+          })),
+        ),
+    )
+    .filter((assignments) => assignments.some((a) => a.weightedScore !== null));
+
+  // Picks one judge who has at least one submission.
+  function pickJudge(
+    assignments: ReadonlyArray<Assignment>,
+    index: number,
+  ): string {
+    const judgeIds = [
+      ...new Set(
+        assignments
+          .filter((a) => a.weightedScore !== null)
+          .map((a) => a.judgeId),
+      ),
+    ];
+    return judgeIds[index % judgeIds.length];
+  }
+
+  function transformJudge(
+    assignments: ReadonlyArray<Assignment>,
+    judgeId: string,
+    f: (score: number) => number,
+  ): Assignment[] {
+    return assignments.map((a) =>
+      a.judgeId === judgeId && a.weightedScore !== null
+        ? { ...a, weightedScore: f(a.weightedScore) }
+        : a,
+    );
+  }
+
+  function expectSameTeamScores(
+    before: Map<string, number>,
+    after: Map<string, number>,
+  ) {
+    expect([...after.keys()].sort()).toEqual([...before.keys()].sort());
+    for (const [teamId, score] of before) {
+      expect(Math.abs((after.get(teamId) ?? NaN) - score)).toBeLessThanOrEqual(
+        1e-9,
+      );
+    }
+  }
+
+  it("leaves every team score unchanged when one judge's scores shift by b in [-100, 100]", () => {
+    fc.assert(
+      fc.property(
+        assignmentsArb,
+        fc.nat(),
+        fc.double({ min: -100, max: 100, noNaN: true }),
+        (assignments, judgeIndex, b) => {
+          const judgeId = pickJudge(assignments, judgeIndex);
+          const shifted = transformJudge(assignments, judgeId, (x) => x + b);
+          expectSameTeamScores(teamScores(assignments), teamScores(shifted));
+        },
+      ),
+    );
+  });
+
+  it("leaves every team score unchanged when one judge's scores scale by a in [0.1, 10]", () => {
+    fc.assert(
+      fc.property(
+        assignmentsArb,
+        fc.nat(),
+        fc.double({ min: 0.1, max: 10, noNaN: true }),
+        (assignments, judgeIndex, a) => {
+          const judgeId = pickJudge(assignments, judgeIndex);
+          const scaled = transformJudge(assignments, judgeId, (x) => x * a);
+          expectSameTeamScores(teamScores(assignments), teamScores(scaled));
+        },
+      ),
+    );
   });
 });
