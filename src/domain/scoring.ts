@@ -12,6 +12,9 @@ export function weightedScore(scores: ReadonlyArray<CriterionScore>): number {
 }
 
 export function zScores(weightedScores: ReadonlyArray<number>): number[] {
+  if (Math.max(...weightedScores) === Math.min(...weightedScores)) {
+    return weightedScores.map(() => 0);
+  }
   const n = weightedScores.length;
   const mean = weightedScores.reduce((sum, x) => sum + x, 0) / n;
   const variance =
