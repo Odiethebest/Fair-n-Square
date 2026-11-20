@@ -10,3 +10,7 @@ export function weightedScore(scores: ReadonlyArray<CriterionScore>): number {
     scores.reduce((sum, { weight, score }) => sum + weight * score, 0) / 100
   );
 }
+
+export function zScores(weightedScores: ReadonlyArray<number>): number[] {
+  return weightedScores.map(() => 0);
+}
