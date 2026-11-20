@@ -22,3 +22,17 @@ export function zScores(weightedScores: ReadonlyArray<number>): number[] {
   const sd = Math.sqrt(variance);
   return weightedScores.map((x) => (x - mean) / sd);
 }
+
+export type Assignment = {
+  judgeId: string;
+  teamId: string;
+  /** The judge's weighted score for the team, or null if not submitted. */
+  weightedScore: number | null;
+};
+
+export function teamScores(
+  assignments: ReadonlyArray<Assignment>,
+): Map<string, number> {
+  void assignments;
+  return new Map();
+}

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { weightedScore, zScores } from "@/domain/scoring";
+import {
+  type Assignment,
+  teamScores,
+  weightedScore,
+  zScores,
+} from "@/domain/scoring";
 
 function expectAllClose(
   actual: ReadonlyArray<number>,
@@ -104,5 +109,35 @@ describe("zScores with zero spread", () => {
     // A guard of `sd === 0` misses this and gives z = -1 for every score.
     // The scores are still all equal (max === min), so every z must be 0.
     expectAllClose(zScores([7.15, 7.15, 7.15]), [0, 0, 0]);
+  });
+});
+
+describe("teamScores", () => {
+  it("averages each team's z-scores across judges and leaves out unsubmitted teams", () => {
+    const assignments: Assignment[] = [
+      { judgeId: "J1", teamId: "A", weightedScore: 6 },
+      { judgeId: "J1", teamId: "B", weightedScore: 8 },
+      { judgeId: "J2", teamId: "B", weightedScore: 4 },
+      { judgeId: "J2", teamId: "C", weightedScore: 8 },
+      { judgeId: "J3", teamId: "A", weightedScore: 7 },
+      { judgeId: "J3", teamId: "D", weightedScore: null },
+    ];
+
+    // J1 submitted [6, 8]: mean 7, population SD 1 -> z A = -1, B = 1
+    // J2 submitted [4, 8]: mean 6, population SD 2 -> z B = -1, C = 1
+    // J3 submitted [7] only (D is null, not submitted): one submission -> z A = 0
+    //   (if D's null were treated as 0, J3 would normalize [7, 0] and give
+    //   z A = 1, which would make team A's score 0 instead of -0.5)
+    // Team A: mean(-1, 0) = -0.5
+    // Team B: mean(1, -1) = 0
+    // Team C: mean(1) = 1
+    // Team D: no submitted assignment -> unranked, absent from the result
+    const result = teamScores(assignments);
+
+    expect(Object.fromEntries(result)).toEqual({
+      A: expect.closeTo(-0.5, 9),
+      B: expect.closeTo(0, 9),
+      C: expect.closeTo(1, 9),
+    });
   });
 });
