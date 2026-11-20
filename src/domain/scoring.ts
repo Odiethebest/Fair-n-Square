@@ -6,6 +6,7 @@ export type CriterionScore = {
 };
 
 export function weightedScore(scores: ReadonlyArray<CriterionScore>): number {
-  void scores;
-  return 0;
+  return (
+    scores.reduce((sum, { weight, score }) => sum + weight * score, 0) / 100
+  );
 }
