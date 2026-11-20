@@ -81,3 +81,28 @@ describe("zScores", () => {
     ]);
   });
 });
+
+describe("zScores with zero spread", () => {
+  it("returns all zeros when several integer scores are equal", () => {
+    // max === min (5), so every z is 0 by the zero-spread rule.
+    // (Naively: mean 5, every deviation 0, SD 0, and 0 / 0 is NaN.)
+    expectAllClose(zScores([5, 5, 5]), [0, 0, 0]);
+  });
+
+  it("returns a single zero for a judge with exactly one submission", () => {
+    // One score is trivially max === min, so its z is 0.
+    // (Naively: mean = 6.5, deviation 0, SD 0, and 0 / 0 is NaN.)
+    expectAllClose(zScores([6.5]), [0]);
+  });
+
+  it("returns all zeros when rounding leaves a tiny nonzero SD for equal scores", () => {
+    // 7.15 is a realistic weighted score: weights 10/15/75 with scores 1/2/9
+    // give (10*1 + 15*2 + 75*9) / 100 = 715 / 100 = 7.15 exactly in JS.
+    // In floating point: 7.15 + 7.15 + 7.15 = 21.450000000000003,
+    // so mean = 21.450000000000003 / 3 = 7.150000000000001 (not 7.15),
+    // each deviation is about -8.9e-16, and SD is about 8.88e-16, not 0.
+    // A guard of `sd === 0` misses this and gives z = -1 for every score.
+    // The scores are still all equal (max === min), so every z must be 0.
+    expectAllClose(zScores([7.15, 7.15, 7.15]), [0, 0, 0]);
+  });
+});
