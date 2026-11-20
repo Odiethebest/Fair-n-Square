@@ -62,3 +62,19 @@
 - `git merge-base --is-ancestor origin/main HEAD`: OK. The branch already includes 0fb7418, so no merge is needed.
 - Compared our plan with the HW4 brief on Canvas. Context management (/clear, /compact, --continue) and iterating on /init output are graded under Part 1, so my Part 3 sessions are Part 1 evidence too. The brief asks for red-green-refactor commits, so after every GREEN I check for a real code smell and note it when I skip REFACTOR.
 - Sent Ziqi 5 questions: Part 2 status, /init evidence, her points for reflection question 1, whether I can merge the PR, and whether fast-check is in package.json. Waiting for her reply.
+
+## 2026-11-19 evening — AC1 and AC2 (TDD)
+
+- AC1 RED 25ec943 (13:52) and GREEN d0cf13e. Confirmation prompt on the GREEN commit: yes. On the RED commit: <确认>.
+- AC1: no REFACTOR. The implementation is a single reduce expression with no duplication or smell.
+- During AC1 GREEN, Claude noticed its new line was 83 characters (Prettier's limit is 80), ran `prettier --write` on scoring.ts only, and told me about the change.
+- Merged main early (b3ac73e) to surface conflicts with Part 2 before the PR. No conflicts; CLAUDE.md auto-merged. 77 tests pass (scoring 4, rubric 41, event-access 6, create-event-form 26). fast-check ^4.10.3 is already a dependency, so AC5 needs no new package.
+- AC2 RED 4abdf61. Asked Claude to make the stub return zeros of the same length, so the RED failures are assertion failures rather than matcher type errors. Checked all expected values by hand; the [2, 4, 4, 4, 5, 5, 7, 9] case separates population SD from sample SD, and the unsorted [7.8, 5.2, 6.5] case catches an implementation that sorts.
+- AC2 GREEN: told Claude not to special-case zero spread, so AC3 can get a real RED.
+- Mistake: typed `git status --short` while `less` was still open; less saved the diff to a file named `tatus --short`. Deleted it: <确认>. Lesson: use `git --no-pager diff`.
+
+- AC3 RED abbf881, GREEN 9bc1b0a. Besides [5, 5, 5] and a single submission, the RED tests include [7.15, 7.15, 7.15]: in floating point the naive population SD is about 8.9e-16, not 0, so the current code returned -1 for each score. A `sd === 0` guard would still fail this test; only `max === min` passes. GREEN uses strict `max === min` on the scores, with no epsilon.
+- Claude said two session exports were untracked; there was only one (I had deleted the stale one outside the session). Claude doesn't see changes I make in Git Bash unless I tell it.
+- AC4 design decided by me: Assignment = { judgeId, teamId, weightedScore: number | null }; teamScores returns a Map; unsubmitted teams are absent. The test includes a null for D on J3's assignments; Claude's comment notes that treating null as 0 would change team A's score from -0.5 to 0. RED 4a467ec, GREEN 887f1ef.
+- REFACTOR <REFACTOR hash>: "sum then divide by length" appeared in the judge mean, the variance, and the team mean, so I extracted a non-exported mean helper. 11 tests still pass. Claude noted the arithmetic order is unchanged, so the results are identical, not just close.
+- 2026-11-20: resumed with `claude --continue`. Claude stated the last commit and the next AC from the session, then checked them against git log.
