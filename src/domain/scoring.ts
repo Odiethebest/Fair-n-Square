@@ -63,6 +63,13 @@ export function teamScores(
   return result;
 }
 
+/** Scores within this distance of each other count as equal when ranking. */
+const SCORE_EQUALITY_TOLERANCE = 1e-9;
+
+function nearlyEqual(a: number, b: number): boolean {
+  return Math.abs(a - b) <= SCORE_EQUALITY_TOLERANCE;
+}
+
 export type TeamResult = {
   teamId: string;
   score: number;
@@ -72,6 +79,27 @@ export type TeamResult = {
 export function rankTeams(
   teams: ReadonlyArray<TeamResult>,
 ): Array<{ teamId: string; rank: number }> {
-  void teams;
-  return [];
+  const sorted = [...teams].sort((x, y) => {
+    if (!nearlyEqual(x.score, y.score)) return y.score - x.score;
+    if (!nearlyEqual(x.meanWeightedScore, y.meanWeightedScore)) {
+      return y.meanWeightedScore - x.meanWeightedScore;
+    }
+    if (x.teamId < y.teamId) return -1;
+    if (x.teamId > y.teamId) return 1;
+    return 0;
+  });
+
+  const ranked: Array<{ teamId: string; rank: number }> = [];
+  sorted.forEach((team, i) => {
+    const previous = sorted[i - 1];
+    const fullyTied =
+      i > 0 &&
+      nearlyEqual(team.score, previous.score) &&
+      nearlyEqual(team.meanWeightedScore, previous.meanWeightedScore);
+    ranked.push({
+      teamId: team.teamId,
+      rank: fullyTied ? ranked[i - 1].rank : i + 1,
+    });
+  });
+  return ranked;
 }
