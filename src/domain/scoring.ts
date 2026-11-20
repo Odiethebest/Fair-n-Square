@@ -33,6 +33,30 @@ export type Assignment = {
 export function teamScores(
   assignments: ReadonlyArray<Assignment>,
 ): Map<string, number> {
-  void assignments;
-  return new Map();
+  const submittedByJudge = new Map<
+    string,
+    { teamId: string; weightedScore: number }[]
+  >();
+  for (const { judgeId, teamId, weightedScore } of assignments) {
+    if (weightedScore === null) continue;
+    const submitted = submittedByJudge.get(judgeId) ?? [];
+    submitted.push({ teamId, weightedScore });
+    submittedByJudge.set(judgeId, submitted);
+  }
+
+  const zByTeam = new Map<string, number[]>();
+  for (const submitted of submittedByJudge.values()) {
+    const zs = zScores(submitted.map((s) => s.weightedScore));
+    submitted.forEach(({ teamId }, i) => {
+      const teamZs = zByTeam.get(teamId) ?? [];
+      teamZs.push(zs[i]);
+      zByTeam.set(teamId, teamZs);
+    });
+  }
+
+  const result = new Map<string, number>();
+  for (const [teamId, teamZs] of zByTeam) {
+    result.set(teamId, teamZs.reduce((sum, z) => sum + z, 0) / teamZs.length);
+  }
+  return result;
 }
