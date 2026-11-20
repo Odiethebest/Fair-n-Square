@@ -11,16 +11,18 @@ export function weightedScore(scores: ReadonlyArray<CriterionScore>): number {
   );
 }
 
+function mean(values: ReadonlyArray<number>): number {
+  return values.reduce((sum, x) => sum + x, 0) / values.length;
+}
+
 export function zScores(weightedScores: ReadonlyArray<number>): number[] {
   if (Math.max(...weightedScores) === Math.min(...weightedScores)) {
     return weightedScores.map(() => 0);
   }
-  const n = weightedScores.length;
-  const mean = weightedScores.reduce((sum, x) => sum + x, 0) / n;
-  const variance =
-    weightedScores.reduce((sum, x) => sum + (x - mean) ** 2, 0) / n;
+  const judgeMean = mean(weightedScores);
+  const variance = mean(weightedScores.map((x) => (x - judgeMean) ** 2));
   const sd = Math.sqrt(variance);
-  return weightedScores.map((x) => (x - mean) / sd);
+  return weightedScores.map((x) => (x - judgeMean) / sd);
 }
 
 export type Assignment = {
@@ -56,7 +58,7 @@ export function teamScores(
 
   const result = new Map<string, number>();
   for (const [teamId, teamZs] of zByTeam) {
-    result.set(teamId, teamZs.reduce((sum, z) => sum + z, 0) / teamZs.length);
+    result.set(teamId, mean(teamZs));
   }
   return result;
 }
