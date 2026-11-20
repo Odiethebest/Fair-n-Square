@@ -2,6 +2,7 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
   type Assignment,
+  rankTeams,
   teamScores,
   weightedScore,
   zScores,
@@ -241,5 +242,77 @@ describe("teamScores invariance (AC5)", () => {
         },
       ),
     );
+  });
+});
+
+describe("rankTeams", () => {
+  it("orders distinct scores descending with ranks 1, 2, 3", () => {
+    // Scores 1 > 0.5 > -1, so A is first, B second, C third.
+    // meanWeightedScore never matters here because no scores tie.
+    const result = rankTeams([
+      { teamId: "C", score: -1, meanWeightedScore: 9 },
+      { teamId: "A", score: 1, meanWeightedScore: 5 },
+      { teamId: "B", score: 0.5, meanWeightedScore: 7 },
+    ]);
+
+    expect(result).toEqual([
+      { teamId: "A", rank: 1 },
+      { teamId: "B", rank: 2 },
+      { teamId: "C", rank: 3 },
+    ]);
+  });
+
+  it("breaks a score tie by the higher mean weighted score", () => {
+    // A and B both score 0.5. B's mean weighted score 8 > A's 7, so B wins.
+    // They are not fully tied, so they get different ranks.
+    const result = rankTeams([
+      { teamId: "A", score: 0.5, meanWeightedScore: 7 },
+      { teamId: "B", score: 0.5, meanWeightedScore: 8 },
+    ]);
+
+    expect(result).toEqual([
+      { teamId: "B", rank: 1 },
+      { teamId: "A", rank: 2 },
+    ]);
+  });
+
+  it("gives fully tied teams the same rank and skips the next rank", () => {
+    // A and B match on score (1) and mean weighted score (7): they share
+    // rank 1 and are listed by teamId ascending (A, then B).
+    // C scores 0 < 1, so it comes after them. Two teams rank above it,
+    // so its rank is 3, not 2 (competition ranking: 1, 1, 3).
+    // C's higher mean weighted score (9) does not matter: score decides first.
+    const result = rankTeams([
+      { teamId: "C", score: 0, meanWeightedScore: 9 },
+      { teamId: "B", score: 1, meanWeightedScore: 7 },
+      { teamId: "A", score: 1, meanWeightedScore: 7 },
+    ]);
+
+    expect(result).toEqual([
+      { teamId: "A", rank: 1 },
+      { teamId: "B", rank: 1 },
+      { teamId: "C", rank: 3 },
+    ]);
+  });
+
+  it("treats scores within 1e-9 as equal, so the tie-break decides", () => {
+    // B's score is 0.5 + 5e-10. The difference 5e-10 is within 1e-9, so the
+    // scores count as equal. The tie-break then compares mean weighted scores:
+    // A's 8 > B's 7, so A ranks first.
+    // A plain `>` comparison on score would put B first instead.
+    const result = rankTeams([
+      { teamId: "A", score: 0.5, meanWeightedScore: 8 },
+      { teamId: "B", score: 0.5 + 5e-10, meanWeightedScore: 7 },
+    ]);
+
+    expect(result).toEqual([
+      { teamId: "A", rank: 1 },
+      { teamId: "B", rank: 2 },
+    ]);
+  });
+
+  it("returns an empty ranking for no teams", () => {
+    // No teams to rank, so the result is empty.
+    expect(rankTeams([])).toEqual([]);
   });
 });

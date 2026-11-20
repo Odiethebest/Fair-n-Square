@@ -62,3 +62,16 @@ export function teamScores(
   }
   return result;
 }
+
+export type TeamResult = {
+  teamId: string;
+  score: number;
+  meanWeightedScore: number;
+};
+
+export function rankTeams(
+  teams: ReadonlyArray<TeamResult>,
+): Array<{ teamId: string; rank: number }> {
+  void teams;
+  return [];
+}
