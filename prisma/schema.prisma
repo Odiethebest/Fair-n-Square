@@ -6,3 +6,55 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum EventStatus {
+  DRAFT
+  JUDGING
+  CLOSED
+  RELEASED
+}
+
+enum EventRole {
+  ORGANIZER
+  JUDGE
+  TEAM
+}
+
+/// Settings have no database defaults: src/domain/rubric.ts is the single source of defaults.
+model Event {
+  id            String        @id @default(cuid())
+  name          String
+  status        EventStatus   @default(DRAFT)
+  judgesPerTeam Int
+  scaleMin      Int
+  scaleMax      Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  criteria      Criterion[]
+  members       EventMember[]
+}
+
+model Criterion {
+  id       String @id @default(cuid())
+  eventId  String
+  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name     String
+  weight   Int
+  /// Order the organizer entered, starting at 0.
+  position Int
+
+  @@unique([eventId, position])
+}
+
+model EventMember {
+  id        String    @id @default(cuid())
+  eventId   String
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  /// Clerk user ID. There is no User table.
+  userId    String
+  role      EventRole
+  createdAt DateTime  @default(now())
+
+  @@unique([eventId, userId, role])
+  @@index([userId])
+}

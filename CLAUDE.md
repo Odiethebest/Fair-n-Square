@@ -113,6 +113,8 @@ These are product decisions and the source of truth for `src/domain`. Ask before
 - Named exports. Default exports only where Next.js requires them (`page`, `layout`, `route`, and similar).
 - Import through the `@/` alias (maps to `src/`). File names are kebab-case; React components are PascalCase.
 - Server actions go in `src/server/actions/<feature>.ts` and queries in `src/server/queries/<feature>.ts`. Return DTOs, never raw Prisma objects.
+- Validation failures are values: the domain returns `{ ok: false, errors: { code, path }[] }`, a form action returns `{ errors, entered }` so the form keeps what was typed, and the UI maps codes to messages.
+- Form parsers live in `src/server/validation/`, because a `"use server"` file may export only async functions.
 - Authorization goes through `requireUser()` and `requireEventRole(eventId, roles)` in `src/server/auth.ts`. Never write ad hoc role checks.
 - Store timestamps in UTC and format them only in the UI.
 - UI uses shadcn/ui components from `src/components/ui` and Tailwind classes; no new CSS files. Judge pages are mobile-first and must work at 375 px wide.
