@@ -61,20 +61,40 @@
 
 - `git merge-base --is-ancestor origin/main HEAD`: OK. The branch already includes 0fb7418, so no merge is needed.
 - Compared our plan with the HW4 brief on Canvas. Context management (/clear, /compact, --continue) and iterating on /init output are graded under Part 1, so my Part 3 sessions are Part 1 evidence too. The brief asks for red-green-refactor commits, so after every GREEN I check for a real code smell and note it when I skip REFACTOR.
-- Sent Ziqi 5 questions: Part 2 status, /init evidence, her points for reflection question 1, whether I can merge the PR, and whether fast-check is in package.json. Waiting for her reply.
+- Sent Ziqi 5 questions: Part 2 status, /init evidence, his points for reflection question 1, whether I can merge the PR, and whether fast-check is in package.json.
+- Answered the same evening by the handoff from Ziqi's coach: Part 2 is merged (PR #6, a5da298); /init evidence is fbdf592; branch protection needs 0 approvals, so I can merge my own PR; fast-check ^4.10.3 is already installed; Ziqi will send his answers for reflection question 1. The second /init and Part 4 were reassigned to me.
 
 ## 2026-11-19 evening — AC1 and AC2 (TDD)
 
-- AC1 RED 25ec943 (13:52) and GREEN d0cf13e. Confirmation prompt on the GREEN commit: yes. On the RED commit: <确认>.
+- AC1 RED 25ec943 (13:52) and GREEN d0cf13e. Confirmation prompt on the GREEN commit: yes. On the RED commit: not recorded at the time.
 - AC1: no REFACTOR. The implementation is a single reduce expression with no duplication or smell.
 - During AC1 GREEN, Claude noticed its new line was 83 characters (Prettier's limit is 80), ran `prettier --write` on scoring.ts only, and told me about the change.
 - Merged main early (b3ac73e) to surface conflicts with Part 2 before the PR. No conflicts; CLAUDE.md auto-merged. 77 tests pass (scoring 4, rubric 41, event-access 6, create-event-form 26). fast-check ^4.10.3 is already a dependency, so AC5 needs no new package.
-- AC2 RED 4abdf61. Asked Claude to make the stub return zeros of the same length, so the RED failures are assertion failures rather than matcher type errors. Checked all expected values by hand; the [2, 4, 4, 4, 5, 5, 7, 9] case separates population SD from sample SD, and the unsorted [7.8, 5.2, 6.5] case catches an implementation that sorts.
-- AC2 GREEN: told Claude not to special-case zero spread, so AC3 can get a real RED.
-- Mistake: typed `git status --short` while `less` was still open; less saved the diff to a file named `tatus --short`. Deleted it: <确认>. Lesson: use `git --no-pager diff`.
+- AC2 RED 4abdf61, GREEN 3f7daaa. Asked Claude to make the stub return zeros of the same length, so the RED failures are assertion failures rather than matcher type errors. Checked all expected values by hand; the [2, 4, 4, 4, 5, 5, 7, 9] case separates population SD from sample SD, and the unsorted [7.8, 5.2, 6.5] case catches an implementation that sorts.
+- AC2 GREEN: told Claude not to special-case zero spread, so AC3 can get a real RED. No REFACTOR: the mean was computed in only one place.
+- Mistake: typed `git status --short` while `less` was still open; less saved the diff to a file named `tatus --short`. Deleted it: yes. Lesson: use `git --no-pager diff`.
 
-- AC3 RED abbf881, GREEN 9bc1b0a. Besides [5, 5, 5] and a single submission, the RED tests include [7.15, 7.15, 7.15]: in floating point the naive population SD is about 8.9e-16, not 0, so the current code returned -1 for each score. A `sd === 0` guard would still fail this test; only `max === min` passes. GREEN uses strict `max === min` on the scores, with no epsilon.
+## 2026-11-19 late evening — AC3, AC4, and the first REFACTOR
+
+- AC3 RED abbf881, GREEN 9bc1b0a. Besides [5, 5, 5] and a single submission, the RED tests include [7.15, 7.15, 7.15]: in floating point the naive population SD is about 8.9e-16, not 0, so the code returned -1 for each score. A `sd === 0` guard would still fail this test; only `max === min` passes. GREEN uses strict `max === min` on the scores, with no epsilon.
 - Claude said two session exports were untracked; there was only one (I had deleted the stale one outside the session). Claude doesn't see changes I make in Git Bash unless I tell it.
 - AC4 design decided by me: Assignment = { judgeId, teamId, weightedScore: number | null }; teamScores returns a Map; unsubmitted teams are absent. The test includes a null for D on J3's assignments; Claude's comment notes that treating null as 0 would change team A's score from -0.5 to 0. RED 4a467ec, GREEN 887f1ef.
-- REFACTOR <REFACTOR hash>: "sum then divide by length" appeared in the judge mean, the variance, and the team mean, so I extracted a non-exported mean helper. 11 tests still pass. Claude noted the arithmetic order is unchanged, so the results are identical, not just close.
-- 2026-11-20: resumed with `claude --continue`. Claude stated the last commit and the next AC from the session, then checked them against git log.
+- REFACTOR 4c60c19: "sum then divide by length" appeared in the judge mean, the variance, and the team mean, so I extracted a non-exported mean helper. 11 tests still pass. Claude noted the arithmetic order is unchanged, so the results are identical, not just close.
+- Exported the session to docs/hw4/sessions/2026-11-19-yunhong-part3-ac1-ac4.md and deleted the earlier partial exports, which were never committed. Then ran `/exit`.
+
+## 2026-11-20 — Resumed with --continue
+
+- Ran `claude --continue` in PowerShell. Claude stated the last commit and the next AC from the session, then checked them against git log. (Screenshot saved.)
+- Found that the previous night's push had not gone through: the branch was 3 commits ahead (AC4 RED, AC4 GREEN, REFACTOR). Committed the notes and the AC1-AC4 export (4726d3c) and pushed everything. Lesson: check `git status -sb` after every push.
+- Claude also flagged that the three earlier partial exports were gone and asked whether that was intended. It was: they were never committed and are contained in the AC1-AC4 export.
+
+## 2026-11-20 — AC5 and AC6
+
+- AC5 614bfe6: the fast-check properties passed on their first run, because shift and scale invariance follow from the AC2/AC3 z-score definition. Committed without a [RED] tag and explained why in the commit body. To show the tests can fail, Claude temporarily made zScores return raw scores: both properties failed, and fast-check shrank them to minimal counterexamples (one score of 1 shifted by about -1e-9; one score of 1 scaled by 0.1). Then it restored scoring.ts, and `git diff --exit-code` confirmed no change.
+- Generator: weighted scores are integers in [100, 1000] divided by 100, which is exactly the set of values Σ(weight × score)/100 can take with integer weights summing to 100 and scores 1-10.
+- AC6 design decided by me: rankTeams takes { teamId, score, meanWeightedScore } and returns { teamId, rank } in rank order; fully tied teams share a rank and are listed by teamId ascending, so the same input gives the same output. Computing meanWeightedScore is not covered by any AC; noted as follow-up work.
+- AC6 RED c7dc640: case (e), empty input, passed with the stub, as expected. GREEN 3b31a2f: copies the input before sorting, compares teamId with plain < and > (not localeCompare), and keeps 1e-9 in a named constant. All 18 scoring tests pass.
+- No REFACTOR after AC6: the tolerance check is already one helper, and nothing is duplicated.
+- Known limitation that Claude raised without being asked: "equal within 1e-9" is not transitive (0, 0.7e-9, 1.4e-9), so in such a chain the order could depend on input order. Not fixed, because the AC specifies this rule and real z-scores are not that close. Recorded for the PR.
+- Final checks after 3b31a2f: 91 tests pass (scoring 18, rubric 41, event-access 6, create-event-form 26); typecheck, lint, and format:check pass; branch in sync with origin. Claude had said the branch was 8 commits ahead; it was actually in sync, because I had pushed from Git Bash, outside its session.
+- Ziqi sent his reflection points for both questions on 11/20.
