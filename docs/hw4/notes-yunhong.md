@@ -54,8 +54,8 @@
 - Commit a505add `docs(claude): define zero spread as all-equal scores (#5)`, with a Co-Authored-By: Claude trailer. Kept the trailer as an honest record of AI involvement.
 - The session was in auto mode when Claude committed. I had approved in the chat ("Approved. Commit it."), and the session export shows that, but no confirmation prompt appeared. Not amending or redoing the commit; recording it as it happened.
 - Lesson: the settings.json `ask` rules and the permission mode are separate layers. In auto mode, an `ask` rule doesn't necessarily stop a commit. From now on I check the status bar before every commit.
-- Switched back to manual mode and tested it: asked Claude to run `git commit --allow-empty`. A confirmation prompt appeared, I declined, and no extra commit was created.
 - Exported the session to docs/hw4/sessions/2026-11-19-yunhong-part3-claude-md-rule.md, then ran `/clear` before starting TDD: new task, and the state lives in CLAUDE.md, issue #5, and the commits.
+- In the new session, still before TDD, I tested manual mode: I asked Claude to run `git commit --allow-empty`. A confirmation prompt appeared and I declined; the export shows the call as "Interrupted" (2026-11-19-yunhong-part3-ac1-ac4.md, lines 8–13), and no extra commit was created. I had first written this test as happening before the export; the session-log search showed the real order, so I corrected it here.
 
 ## 2026-11-19 — Pre-commit checks and HW4 brief cross-check
 
