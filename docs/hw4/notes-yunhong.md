@@ -98,3 +98,14 @@
 - Known limitation that Claude raised without being asked: "equal within 1e-9" is not transitive (0, 0.7e-9, 1.4e-9), so in such a chain the order could depend on input order. Not fixed, because the AC specifies this rule and real z-scores are not that close. Recorded for the PR.
 - Final checks after 3b31a2f: 91 tests pass (scoring 18, rubric 41, event-access 6, create-event-form 26); typecheck, lint, and format:check pass; branch in sync with origin. Claude had said the branch was 8 commits ahead; it was actually in sync, because I had pushed from Git Bash, outside its session.
 - Ziqi sent his reflection points for both questions on 11/20.
+
+## 2026-11-20 — PR #7 and the second /init
+
+- Before opening PR #7: main had no new commits since my merge; `npm run build` passes with the placeholder .env; `npm audit --omit=dev` reports 3 high-severity issues from one advisory (effect <=3.22.0 through prisma → @prisma/config), and the only fix is a breaking downgrade to Prisma 6, so it isn't addressed here.
+- PR #7 merged as 00afc57 with a merge commit (the only merge method the repo offers). "Closes #5" closed the issue, and I ticked all six AC checkboxes.
+- Exported the rest of the Part 3 session as 2026-11-20-yunhong-part3-wrapup.md. It includes Claude admitting the "8 commits ahead" claim was based on stale state.
+- Opened issue #8 for the second /init, so the setup work has an issue to reference. Branch: chore/8-init-lessons.
+- Ran `/clear` before `/init`: new task, and the Part 3 state lives in commits, notes, and exports. The `/clear` help text says the previous session stays on disk and can be resumed with `/resume`. Claude Code is now v2.1.328 after the pending update.
+- `/init` read the code through three read-only Bash commands: package.json, the tracked files, and other agents' config files; the server and domain files plus `gh issue view 8`; and a grep over both notes files for lesson candidates. For the approval prompt I was shown, I chose "Yes", not "don't ask again" or "switch to auto mode", even though the prompt suggested auto mode. I first wrote "one chained command"; Claude pointed out the mistake before I committed, and I fixed it here instead of amending.
+- `/init` did not edit CLAUDE.md. It listed eight fixes and additions plus Lessons learned candidates. I applied all eight. For the lessons, I replaced `npm run format` (it formats the whole repo and runs without a prompt) with `npx prettier --write <file>`, kept the Glob/Grep entry it proposed to drop, and added four it missed. It also missed that shadcn/ui isn't installed even though CLAUDE.md says the UI uses it; one of the new lessons covers that. Commit 315a138.
+- My Part 3 session exports contain no Glob or Grep tool calls; Claude searched through Bash.

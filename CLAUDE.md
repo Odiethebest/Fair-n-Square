@@ -3,7 +3,7 @@
 Judging platform for hackathons, demo days, and class showcases. Organizers build a weighted rubric and invite judges and teams; judges score their assigned teams on their phones; rankings normalize each judge's scores so winners don't depend on which judges a team drew.
 
 - Product requirements and user stories: @docs/prd.md
-- Setup and human-facing overview: README.md (not auto-loaded; read it when needed)
+- Setup and human-facing overview: README.md (not auto-loaded; not written yet, still the create-next-app boilerplate)
 
 ## Commands
 
@@ -63,6 +63,7 @@ Three layers. Dependencies point one way: `src/app` → `src/server` → `src/do
 Routes:
 
 - `/events` — events I belong to, in any role
+- `/events/new` — create an event (any signed-in user)
 - `/events/[eventId]/manage/...` — organizer: setup, invites, assignments, progress, results
 - `/events/[eventId]/judge` and `/events/[eventId]/judge/[teamId]` — judge: assigned teams, scoring form
 - `/events/[eventId]/team` — team: project details, released results
@@ -72,7 +73,7 @@ Routes:
 ### Database (Prisma 7 + Neon)
 
 - The datasource URL is set in `prisma.config.ts`, not in `schema.prisma`, as Prisma 7 requires. The CLI (migrations) uses the direct connection `DATABASE_URL_UNPOOLED`.
-- At runtime the app uses the pooled `DATABASE_URL` through `@prisma/adapter-neon`. The shared client will live in `src/server/db.ts`.
+- At runtime the app uses the pooled `DATABASE_URL` through `@prisma/adapter-neon`. The shared client is `db` in `src/server/db.ts`; only `src/server` may import it.
 - The client is generated to `src/generated/prisma/`. That folder is gitignored and has no postinstall hook, so run `npm run db:generate` after a fresh clone or a schema change, before code that imports the client will typecheck or build. Import it from `@/generated/prisma`, not `@prisma/client`.
 
 ### Architecture decisions
@@ -115,7 +116,11 @@ These are product decisions and the source of truth for `src/domain`. Ask before
 - Server actions go in `src/server/actions/<feature>.ts` and queries in `src/server/queries/<feature>.ts`. Return DTOs, never raw Prisma objects.
 - Validation failures are values: the domain returns `{ ok: false, errors: { code, path }[] }`, a form action returns `{ errors, entered }` so the form keeps what was typed, and the UI maps codes to messages.
 - Form parsers live in `src/server/validation/`, because a `"use server"` file may export only async functions.
+- Validation has two stages: the Zod parser in `src/server/validation/` checks only payload shape and size caps (failing with `invalid_request`); business rules and their limits live in the domain validator (e.g. `validateEventDraft` in `src/domain/rubric.ts`), which returns the specific codes.
+- Server code takes `EventStatus` and `EventRole` from `src/domain`, not from the Prisma enums.
 - Authorization goes through `requireUser()` and `requireEventRole(eventId, roles)` in `src/server/auth.ts`. Never write ad hoc role checks.
+  - `requireEventRole` takes the raw `eventId: unknown` and validates it as a cuid itself. A malformed ID, a missing event, and a missing role all get the same 404 via `notFound()`, so event IDs can't be probed. `notFound()` throws: never wrap these calls in try/catch.
+  - `requireUser()` uses `auth.protect()`: signed-out page requests redirect to sign-in; signed-out Server Actions get a 401.
 - Store timestamps in UTC and format them only in the UI.
 - UI uses shadcn/ui components from `src/components/ui` and Tailwind classes; no new CSS files. Judge pages are mobile-first and must work at 375 px wide.
 - Prettier with default settings (`.prettierrc.json` is `{}`). Line endings are forced to LF by `.gitattributes`.
@@ -136,7 +141,7 @@ These are product decisions and the source of truth for `src/domain`. Ask before
 
 ## Security (OWASP Top 10)
 
-- **Broken access control** is the main risk here. Every action and query calls `requireEventRole`. Never trust an `eventId`, `teamId`, or role sent by the client: check that the resource belongs to the event and that the user holds the role. Middleware only redirects signed-out users and is never the authorization layer (CVE-2025-29927 showed it can be bypassed). Keep results hidden until `RELEASED`, enforced on the server.
+- **Broken access control** is the main risk here. Every action and query calls `requireEventRole`; the one exception is `createEvent`, which calls only `requireUser()` because the event doesn't exist yet (don't copy that pattern elsewhere). Never trust an `eventId`, `teamId`, or role sent by the client: check that the resource belongs to the event and that the user holds the role. Middleware only redirects signed-out users and is never the authorization layer (CVE-2025-29927 showed it can be bypassed). Keep results hidden until `RELEASED`, enforced on the server.
 - **Injection:** use Prisma only, never `$queryRawUnsafe`. Validate every input with Zod. Team descriptions and judge comments are untrusted, so never render them with `dangerouslySetInnerHTML`.
 - **Cryptographic failures and secrets:** secrets live only in environment variables, never in code or logs. Only `NEXT_PUBLIC_*` variables reach the browser, so no secret ever gets that prefix. Invite tokens are random (at least 128 bits), stored hashed, expiring, and revocable.
 - **Security misconfiguration:** set security headers (CSP, `frame-ancestors`, `Referrer-Policy`) in `next.config`; never return stack traces in production.
@@ -178,7 +183,20 @@ Don't:
 - Use Explore → Plan → Implement → Commit for every issue. Read the relevant code first without editing. Plan in plan mode; plans are saved to `docs/plans/`. Implement one plan step at a time and commit each step.
 - Acceptance criteria live in the GitHub issue as Given/When/Then. Reference the issue in commits and PRs.
 - One task per session. State lives in issues, plans, and commits, so `/clear` between tasks is safe.
+- Explore notes go in `docs/explore/<issue>-<slug>.md`, plans in `docs/plans/`, and session exports in `docs/hw4/sessions/`. Session exports are evidence: never edit or reformat them.
 
 ## Lessons learned
 
 Append a dated, one-line rule whenever Claude repeats a mistake or a retro produces a new rule.
+
+- 2026-11-19: Format a new test file with `npx prettier --write <file>` before the RED review, so GREEN never has to touch the test.
+- 2026-11-19: docs/hw4/sessions/ and docs/plans/ are evidence: never edit or reformat them, and run `/export` before `/compact`.
+- 2026-11-19: settings.json `ask` rules don't override the permission mode; in auto mode a commit can go through without a prompt, so check the mode before letting Claude commit.
+- 2026-11-19: Setup or chore work still gets an issue first, so every commit and branch can reference one.
+- 2026-11-19: Native Claude Code builds on macOS and Linux (2.1.117 and later) have no Glob/Grep tools; search with Read and read-only shell commands. Part 3 on Windows also searched through Bash.
+- 2026-11-19: Some of this file describes what the repo doesn't have yet: shadcn/ui isn't installed (use plain Tailwind), and there are no integration tests or CI.
+- 2026-11-19: Clerk's sign-up page has a bot check, so a human creates test users through the Clerk Backend API; never give Claude the secret key.
+- 2026-11-20: Claude can't see what happens outside its session (merges, deleted files, pushes from a terminal); tell it, and run `git status -sb` before reporting ahead or behind counts.
+- 2026-11-20: Use `git --no-pager` for diff and log, and check `git status -sb` after every push to confirm it landed.
+- 2026-11-20: When a new property test passes on its first run, temporarily break the implementation to prove the test can fail, revert, and say so in the commit; don't fake a RED.
+- 2026-11-20: Ranking ties use a 1e-9 tolerance, which isn't transitive; this is known and accepted, so don't "fix" it without changing the rule.
